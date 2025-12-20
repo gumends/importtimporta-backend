@@ -30,9 +30,15 @@ public class Startup
             options.AddPolicy("AllowFrontend", policy =>
             {
                 policy
-                    .AllowAnyOrigin()
+                    .WithOrigins(
+                        "http://localhost:3000",
+                        "https://localhost:3000",
+                        "http://localhost:7126",
+                        "https://localhost:7126"
+                    )
                     .AllowAnyHeader()
-                    .AllowAnyMethod();
+                    .AllowAnyMethod()
+                    .AllowCredentials();
             });
         });
 

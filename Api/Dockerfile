@@ -25,4 +25,4 @@ ENV ASPNETCORE_ENVIRONMENT=Production
 EXPOSE 80
 
 # Start da aplicação
-ENTRYPOINT ["dotnet", "api-importtimporta"]
+ENTRYPOINT ["dotnet", "Api.dll"]

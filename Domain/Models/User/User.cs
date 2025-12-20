@@ -7,7 +7,6 @@ public class User
     public int Id { get; set; }
     public string Name { get; set; } = "";
     public string Email { get; set; } = "";
-    [JsonIgnore]
     public string Senha { get; set; } = "";
     public DateOnly Nascimento { get; set; } = new DateOnly();
     public TipoAcesso Acesso { get; set; }
