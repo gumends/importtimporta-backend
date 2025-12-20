@@ -14,19 +14,22 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-    var tentativas = 10;
-    while (tentativas > 0)
+    var retries = 10;
+    var delay = TimeSpan.FromSeconds(5);
+
+    while (retries > 0)
     {
         try
         {
             db.Database.Migrate();
             break;
         }
-        catch
+        catch (Exception ex)
         {
-            tentativas--;
-            Console.WriteLine($"Banco não disponível. Tentativas restantes: {tentativas}");
-            Thread.Sleep(3000);
+            retries--;
+            Console.WriteLine($"Banco não disponível. Tentativas restantes: {retries}");
+            if (retries == 0) throw;
+            Thread.Sleep(delay);
         }
     }
 }

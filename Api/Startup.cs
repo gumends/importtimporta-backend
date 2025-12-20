@@ -59,7 +59,11 @@ public class Startup
         // Banco
         var cs = _config.GetConnectionString("DefaultConnection");
         services.AddDbContext<AppDbContext>(options =>
-            options.UseMySql(cs, ServerVersion.AutoDetect(cs)));
+            options.UseMySql(
+                cs,
+                new MySqlServerVersion(new Version(8, 0, 44))
+            )
+        );
 
         // AWS Settings
         services.Configure<S3Settings>(_config.GetSection("AWS"));
