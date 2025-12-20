@@ -4,16 +4,18 @@ using Domain.DTO;
 using Domain.Models.Imagem;
 using Domain.Models.Produto;
 using Microsoft.AspNetCore.Http;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace Application.Services
 {
     public class ProdutoService : IProdutoService
     {
-        public readonly IProdutoRepository _produtoRepository;
-        public readonly IS3Service _awsS3Service;
+        private readonly IProdutoRepository _produtoRepository;
+        private readonly IS3Service _awsS3Service;
 
-        public ProdutoService(IProdutoRepository produtoRepository, S3Service s3Service)
+        public ProdutoService(
+            IProdutoRepository produtoRepository,
+            IS3Service s3Service
+        )
         {
             _produtoRepository = produtoRepository;
             _awsS3Service = s3Service;
@@ -33,7 +35,7 @@ namespace Application.Services
 
                 foreach (var imagem in imagens)
                 {
-                    string caminhoS3 = await _awsS3Service.UploadAsync(imagem);
+                    var caminhoS3 = await _awsS3Service.UploadAsync(imagem);
 
                     novoProduto.Imagens.Add(new Imagem
                     {
@@ -136,10 +138,6 @@ namespace Application.Services
             return produtoExistente;
         }
 
-
-
-
-
         public async Task<Produto?> ObterProdutoPorId(int id)
         {
             return await _produtoRepository.ObterProdutoPorId(id);
@@ -149,6 +147,9 @@ namespace Application.Services
         public async Task<bool> RemoveProduto(int id)
         {
             var produto = await _produtoRepository.ObterProdutoPorId(id);
+
+            if (produto == null)
+                return false;
 
             foreach (var item in produto.Imagens)
             {
@@ -160,8 +161,6 @@ namespace Application.Services
 
             return await _produtoRepository.RemoveProduto(id);
         }
-
-
 
         public async Task<PaginacaoResultado<Produto>> ListaProdutos(int pagina, int tamanhoPagina)
         {

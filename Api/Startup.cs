@@ -24,16 +24,12 @@ public class Startup
     {
         services.AddControllers();
 
-        // CORS
         services.AddCors(options =>
         {
             options.AddPolicy("AllowFrontend", policy =>
             {
                 policy
-                    .WithOrigins(
-                        "http://localhost:3000",
-                        "http://100.28.1.126:3000"
-                    )
+                    .AllowAnyOrigin()
                     .AllowAnyHeader()
                     .AllowAnyMethod();
             });
@@ -45,8 +41,6 @@ public class Startup
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>
             {
-                options.RequireHttpsMetadata = false;
-                options.SaveToken = true;
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuerSigningKey = true,
@@ -62,23 +56,24 @@ public class Startup
 
         services.AddAuthorization();
 
-        // DB
+        // Banco
         var cs = _config.GetConnectionString("DefaultConnection");
-
         services.AddDbContext<AppDbContext>(options =>
-            options.UseMySql(
-                cs,
-                new MySqlServerVersion(new Version(8, 0, 44))
-            )
-        );
+            options.UseMySql(cs, ServerVersion.AutoDetect(cs)));
 
-        // DI
-        services.AddScoped<IAuthServices, AuthServices>();
-        services.AddScoped<IUserRepository, UserRepository>();
-        services.AddScoped<IUserService, UserService>();
-        services.AddScoped<IProdutoRepository, ProdutoRepository>();
+        // AWS Settings
+        services.Configure<S3Settings>(_config.GetSection("AWS"));
+
+        // DI Services
+        services.AddScoped<IS3Service, S3Service>();
         services.AddScoped<IProdutoService, ProdutoService>();
+        services.AddScoped<IUserService, UserService>();
+        services.AddScoped<IAuthServices, AuthServices>();
         services.AddScoped<IJwtService, JwtService>();
+
+        // Repositories
+        services.AddScoped<IProdutoRepository, ProdutoRepository>();
+        services.AddScoped<IUserRepository, UserRepository>();
 
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen();
@@ -86,7 +81,7 @@ public class Startup
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
     {
-        if (env.IsDevelopment() || env.IsEnvironment("Staging"))
+        if (env.IsDevelopment())
         {
             app.UseSwagger();
             app.UseSwaggerUI();
