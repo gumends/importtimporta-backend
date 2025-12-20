@@ -1,6 +1,3 @@
-# ============================
-# BUILD
-# ============================
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
 
@@ -24,5 +21,4 @@ ENV ASPNETCORE_ENVIRONMENT=Production
 
 EXPOSE 80
 
-# Start da aplicação
 ENTRYPOINT ["dotnet", "Api.dll"]
