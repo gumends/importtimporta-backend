@@ -25,6 +25,7 @@ public class Startup
     {
         services.AddControllers();
 
+        // CORS
         services.AddCors(options =>
         {
             options.AddPolicy("AllowFrontend", policy =>
@@ -42,6 +43,7 @@ public class Startup
             });
         });
 
+        // JWT
         var key = Encoding.UTF8.GetBytes(_config["Jwt:Key"]!);
 
         services
@@ -66,12 +68,17 @@ public class Startup
 
         services.AddAuthorization();
 
+        // Database
         var cs = _config.GetConnectionString("DefaultConnection");
 
         services.AddDbContext<AppDbContext>(options =>
             options.UseMySql(cs, ServerVersion.AutoDetect(cs)));
 
-        // DI
+        // AWS S3 (CORRETO)
+        services.Configure<S3Settings>(_config.GetSection("AWS"));
+        services.AddSingleton<IS3Service, S3Service>();
+
+        // Dependency Injection
         services.AddScoped<IAuthServices, AuthServices>();
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IUserService, UserService>();
@@ -79,8 +86,40 @@ public class Startup
         services.AddScoped<IProdutoService, ProdutoService>();
         services.AddScoped<IJwtService, JwtService>();
 
+        // Swagger
         services.AddEndpointsApiExplorer();
-        services.AddSwaggerGen();
+        services.AddSwaggerGen(options =>
+        {
+            options.SwaggerDoc("v1", new OpenApiInfo
+            {
+                Title = "Importt Importa API",
+                Version = "v1"
+            });
+
+            options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+            {
+                Name = "Authorization",
+                Type = SecuritySchemeType.Http,
+                Scheme = "Bearer",
+                BearerFormat = "JWT",
+                In = ParameterLocation.Header
+            });
+
+            options.AddSecurityRequirement(new OpenApiSecurityRequirement
+            {
+                {
+                    new OpenApiSecurityScheme
+                    {
+                        Reference = new OpenApiReference
+                        {
+                            Type = ReferenceType.SecurityScheme,
+                            Id = "Bearer"
+                        }
+                    },
+                    Array.Empty<string>()
+                }
+            });
+        });
     }
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -102,5 +141,4 @@ public class Startup
             endpoints.MapControllers();
         });
     }
-
 }
