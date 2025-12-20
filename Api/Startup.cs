@@ -72,7 +72,12 @@ public class Startup
         var cs = _config.GetConnectionString("DefaultConnection");
 
         services.AddDbContext<AppDbContext>(options =>
-            options.UseMySql(cs, ServerVersion.AutoDetect(cs)));
+            options.UseMySql(
+                cs,
+                new MySqlServerVersion(new Version(8, 0, 44))
+            )
+        );
+
 
         // AWS S3 (CORRETO)
         services.Configure<S3Settings>(_config.GetSection("AWS"));
