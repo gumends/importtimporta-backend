@@ -136,14 +136,14 @@ public class Startup
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "Importt Importa API v1");
                 c.RoutePrefix = "swagger";
             });
-        }
 
-        app.UseHttpsRedirection();
+            app.UseHttpsRedirection(); // 👈 só em dev
+        }
 
         app.UseRouting();
 
         app.UseCors("AllowFrontend");
-        
+
         app.UseMiddleware<ExceptionMiddleware>();
 
         app.UseAuthentication();
@@ -154,6 +154,4 @@ public class Startup
             endpoints.MapControllers();
         });
     }
-
-
 }
