@@ -29,9 +29,9 @@ public class Startup
             options.AddPolicy("AllowFrontend", policy =>
             {
                 policy
+                    .AllowAnyOrigin()
                     .AllowAnyHeader()
-                    .AllowAnyMethod()
-                    .AllowCredentials();
+                    .AllowAnyMethod();
             });
         });
 
