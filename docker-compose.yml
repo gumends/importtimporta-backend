@@ -1,13 +1,21 @@
 services:
-  app:
+  api:
     build:
       context: ./Api
       dockerfile: Dockerfile
+    container_name: importtimporta-api
     ports:
       - "5000:80"
     environment:
       ASPNETCORE_ENVIRONMENT: Production
       ConnectionStrings__DefaultConnection: "Server=db;Port=3306;Database=importtimporta;User=importt;Password=123456;SslMode=none;"
+      Jwt__Key: "JWT_SECRET_AQUI"
+      Jwt__Issuer: "api-importtimporta"
+      Jwt__Audience: "api-importtimporta"
+      AWS__Region: "us-east-1"
+      AWS__AccessKey: "AWS_ACCESS_KEY"
+      AWS__SecretKey: "AWS_SECRET_KEY"
+      AWS__BucketName: "importtimporta"
     depends_on:
       - db
 
