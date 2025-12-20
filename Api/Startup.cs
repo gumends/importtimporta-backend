@@ -29,9 +29,13 @@ public class Startup
             options.AddPolicy("AllowFrontend", policy =>
             {
                 policy
-                    .AllowAnyOrigin()
+                    .WithOrigins(
+                        "http://100.28.1.126:3000",
+                        "http://localhost:3000"
+                    )
                     .AllowAnyHeader()
-                    .AllowAnyMethod();
+                    .AllowAnyMethod()
+                    .AllowCredentials();
             });
         });
 
@@ -59,11 +63,7 @@ public class Startup
         // Banco
         var cs = _config.GetConnectionString("DefaultConnection");
         services.AddDbContext<AppDbContext>(options =>
-            options.UseMySql(
-                cs,
-                new MySqlServerVersion(new Version(8, 0, 44))
-            )
-        );
+            options.UseMySql(cs, ServerVersion.AutoDetect(cs)));
 
         // AWS Settings
         services.Configure<S3Settings>(_config.GetSection("AWS"));
