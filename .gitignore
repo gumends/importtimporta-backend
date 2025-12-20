@@ -1,0 +1,105 @@
+# =========================
+# Visual Studio / VS Code
+# =========================
+.vs/
+.vscode/
+.idea/
+
+# Arquivos de usuário
+*.user
+*.rsuser
+*.suo
+*.userosscache
+*.sln.docstates
+
+# =========================
+# Build / Publish
+# =========================
+bin/
+obj/
+out/
+publish/
+artifacts/
+
+# =========================
+# Testes
+# =========================
+TestResults/
+coverage/
+coverage.cobertura.xml
+
+# =========================
+# Logs
+# =========================
+*.log
+
+# =========================
+# NuGet
+# =========================
+packages/
+*.nupkg
+*.snupkg
+.nuget/
+
+# =========================
+# ASP.NET / .NET Core
+# =========================
+Api/appsettings.Development.json
+Api/appsettings.json
+Api/appsettings.Production.json
+
+Application/appsettings.Development.json
+Application/appsettings.json
+Application/appsettings.Production.json
+
+# Secrets
+secrets.json
+
+# =========================
+# Entity Framework
+# =========================
+Migrations/*.Designer.cs
+Migrations/*.csproj
+*.db
+*.db-shm
+*.db-wal
+
+# =========================
+# Docker
+# =========================
+.dockerignore
+docker-compose.override.yml
+
+# =========================
+# OS
+# =========================
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# macOS
+.DS_Store
+
+# Linux
+*~
+
+# =========================
+# Rider / ReSharper
+# =========================
+_ReSharper*/
+*.DotSettings.user
+
+# =========================
+# Node / Frontend (caso exista)
+# =========================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# =========================
+# Environment files
+# =========================
+.env
+.env.*
