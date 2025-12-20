@@ -9,26 +9,24 @@ startup.ConfigureServices(builder.Services);
 
 var app = builder.Build();
 
+// aplica migrations com retry simples
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-    var retries = 10;
-    var delay = TimeSpan.FromSeconds(5);
-
-    while (retries > 0)
+    var tentativas = 10;
+    while (tentativas > 0)
     {
         try
         {
             db.Database.Migrate();
             break;
         }
-        catch (Exception ex)
+        catch
         {
-            retries--;
-            Console.WriteLine($"Banco não disponível. Tentativas restantes: {retries}");
-            if (retries == 0) throw;
-            Thread.Sleep(delay);
+            tentativas--;
+            Console.WriteLine($"Banco não disponível. Tentativas restantes: {tentativas}");
+            Thread.Sleep(3000);
         }
     }
 }

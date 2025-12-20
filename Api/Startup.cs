@@ -7,7 +7,6 @@ using Infrastructure.Persistence.Repositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
 using System.Text;
 
 namespace Api;
@@ -33,26 +32,21 @@ public class Startup
                 policy
                     .WithOrigins(
                         "http://localhost:3000",
-                        "https://localhost:3000",
-                        "http://localhost:7126",
-                        "https://localhost:7126"
+                        "http://100.28.1.126:3000"
                     )
                     .AllowAnyHeader()
-                    .AllowAnyMethod()
-                    .AllowCredentials();
+                    .AllowAnyMethod();
             });
         });
 
         // JWT
         var key = Encoding.UTF8.GetBytes(_config["Jwt:Key"]!);
 
-        services
-            .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+        services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>
             {
                 options.RequireHttpsMetadata = false;
                 options.SaveToken = true;
-
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuerSigningKey = true,
@@ -68,7 +62,7 @@ public class Startup
 
         services.AddAuthorization();
 
-        // Database
+        // DB
         var cs = _config.GetConnectionString("DefaultConnection");
 
         services.AddDbContext<AppDbContext>(options =>
@@ -78,12 +72,7 @@ public class Startup
             )
         );
 
-
-        // AWS S3 (CORRETO)
-        services.Configure<S3Settings>(_config.GetSection("AWS"));
-        services.AddSingleton<IS3Service, S3Service>();
-
-        // Dependency Injection
+        // DI
         services.AddScoped<IAuthServices, AuthServices>();
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IUserService, UserService>();
@@ -91,47 +80,14 @@ public class Startup
         services.AddScoped<IProdutoService, ProdutoService>();
         services.AddScoped<IJwtService, JwtService>();
 
-        // Swagger
         services.AddEndpointsApiExplorer();
-        services.AddSwaggerGen(options =>
-        {
-            options.SwaggerDoc("v1", new OpenApiInfo
-            {
-                Title = "Importt Importa API",
-                Version = "v1"
-            });
-
-            options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-            {
-                Name = "Authorization",
-                Type = SecuritySchemeType.Http,
-                Scheme = "Bearer",
-                BearerFormat = "JWT",
-                In = ParameterLocation.Header
-            });
-
-            options.AddSecurityRequirement(new OpenApiSecurityRequirement
-            {
-                {
-                    new OpenApiSecurityScheme
-                    {
-                        Reference = new OpenApiReference
-                        {
-                            Type = ReferenceType.SecurityScheme,
-                            Id = "Bearer"
-                        }
-                    },
-                    Array.Empty<string>()
-                }
-            });
-        });
+        services.AddSwaggerGen();
     }
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
     {
-        if (env.IsDevelopment())
+        if (env.IsDevelopment() || env.IsEnvironment("Staging"))
         {
-            app.UseDeveloperExceptionPage();
             app.UseSwagger();
             app.UseSwaggerUI();
         }
