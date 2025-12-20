@@ -4,11 +4,11 @@
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
 
-# Copia csproj de TODOS os projetos
+# Copia os csproj (NOMES REAIS)
 COPY Api/Api.csproj Api/
 COPY Application/Application.csproj Application/
 COPY Infrastructure/Infrastructure.csproj Infrastructure/
-COPY Domain/Domain.csproj Domain/
+COPY Domain/ImporttImporta.Domain.csproj Domain/
 
 RUN dotnet restore Api/Api.csproj
 
@@ -26,9 +26,7 @@ WORKDIR /app
 COPY --from=build /app/publish .
 
 EXPOSE 80
-
 ENV ASPNETCORE_URLS=http://+:80
 ENV ASPNETCORE_ENVIRONMENT=Production
 
-# Start da aplicação
-ENTRYPOINT ["dotnet", "api-importtimporta"]
+ENTRYPOINT ["dotnet", "Api.dll"]
