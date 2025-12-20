@@ -7,8 +7,7 @@ using Infrastructure.Persistence.Repositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models; // <--- IMPORTANTE
-using System;
+using Microsoft.OpenApi.Models;
 using System.Text;
 
 namespace Api;
@@ -88,7 +87,6 @@ public class Startup
         services.AddScoped<IProdutoService, ProdutoService>(); 
         services.AddScoped<IJwtService, JwtService>(); 
 
-        // 🔹 SWAGGER
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen(c =>
         {
