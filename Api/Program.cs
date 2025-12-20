@@ -1,17 +1,23 @@
 using Api;
+using Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 var startup = new Startup(builder.Configuration);
 startup.ConfigureServices(builder.Services);
 
-// AWS S3
 builder.Services.Configure<S3Settings>(
     builder.Configuration.GetSection("AWS"));
-
 builder.Services.AddSingleton<S3Service>();
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    db.Database.Migrate();
+}
 
 startup.Configure(app, app.Environment);
 
