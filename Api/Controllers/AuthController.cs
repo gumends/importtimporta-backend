@@ -2,6 +2,7 @@
 using Domain.Entities;
 using Domain.Models.Auth;
 using Microsoft.AspNetCore.Mvc;
+using System.Web;
 
 namespace Api.Controllers;
 
@@ -10,12 +11,20 @@ namespace Api.Controllers;
 public class AuthController : ControllerBase
 {
     private readonly IAuthServices _authServices;
+    private readonly IConfiguration _config;
 
-    public AuthController(IAuthServices authServices)
+    public AuthController(
+        IAuthServices authServices,
+        IConfiguration config
+    )
     {
         _authServices = authServices;
+        _config = config;
     }
 
+    // ===============================
+    // GOOGLE LOGIN
+    // ===============================
     [HttpGet("google-url")]
     public IActionResult GetGoogleUrl([FromQuery] string state)
     {
@@ -24,81 +33,76 @@ public class AuthController : ControllerBase
     }
 
     [HttpGet("callback/google")]
-    public async Task<IActionResult> GoogleCallback([FromQuery] string code, [FromQuery] string state)
+    public async Task<IActionResult> GoogleCallback([FromQuery] string code)
     {
+        // 🔴 Validação CRÍTICA
+        if (string.IsNullOrEmpty(code))
+        {
+            return Content("<h2>Erro: código do Google não recebido</h2>", "text/html");
+        }
+
         var result = await _authServices.GoogleCallback(code);
 
-        Response.Cookies.Append("auth_token", result.Token, new CookieOptions
-        {
-            Domain = "localhost",
-            HttpOnly = true,
-            Secure = true,
-            SameSite = SameSiteMode.None,
-            Path = "/",
-            Expires = DateTime.UtcNow.AddHours(2)
-        });
+        var frontendUrl = _config["FrontendUrl"];
+        var safeToken = HttpUtility.JavaScriptStringEncode(result.Token);
 
-        return Redirect(state);
+        return Content($@"
+<html>
+  <body>
+    <script>
+      if (window.opener) {{
+        window.opener.postMessage(
+          {{ token: '{safeToken}' }},
+          '{frontendUrl}'
+        );
+        window.close();
+      }} else {{
+        document.body.innerHTML = 'Erro: opener não encontrado';
+      }}
+    </script>
+  </body>
+</html>
+", "text/html");
     }
 
+    // ===============================
+    // ME
+    // ===============================
     [HttpPost("me")]
     public async Task<IActionResult> Me([FromBody] MeResponse meResponse)
     {
-        var token = Request.Cookies["auth_token"];
-        var sessionToken = meResponse?.SessionToken;
-
-        if (string.IsNullOrEmpty(token))
-            token = sessionToken;
-
-        if (string.IsNullOrEmpty(token))
-        {
+        if (string.IsNullOrEmpty(meResponse?.SessionToken))
             return Unauthorized();
-        }
 
-        var user = await _authServices.ValidMe(token);
+        var user = await _authServices.ValidMe(meResponse.SessionToken);
 
-        if (user != null)
-        {
-            return Ok(user);
-        }
+        if (user == null)
+            return Unauthorized();
 
-        return Unauthorized();
+        return Ok(user);
     }
 
+    // ===============================
+    // LOGOUT
+    // ===============================
     [HttpPost("logout")]
     public IActionResult Logout()
     {
-        Response.Cookies.Delete("auth_token", new CookieOptions
-        {
-            HttpOnly = true,
-            Secure = true,
-            SameSite = SameSiteMode.None,
-            Path = "/"
-        });
-
         return Ok(new { message = "Logout realizado" });
     }
 
+    // ===============================
+    // LOGIN NORMAL
+    // ===============================
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] Login login)
     {
         var token = await _authServices.Login(login);
 
         if (string.IsNullOrEmpty(token))
-        {
             return Unauthorized();
-        }
 
-        Response.Cookies.Append("auth_token", token, new CookieOptions
-        {
-            HttpOnly = false,
-            Secure = false,
-            SameSite = SameSiteMode.Lax,
-            Path = "/",
-            Expires = DateTime.UtcNow.AddHours(2)
-        });
-
-
-        return Ok(new { Token = token });
+        // 🔥 NÃO grava cookie, frontend cuida disso
+        return Ok(new { token });
     }
 }
