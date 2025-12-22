@@ -13,15 +13,32 @@ jobs:
       - name: Checkout código
         uses: actions/checkout@v4
 
-      - name: Conectar na EC2 e fazer deploy
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Restore dependências
+        run: dotnet restore api-importtimporta.sln
+
+      - name: Build
+        run: dotnet build api-importtimporta.sln --configuration Release --no-restore
+
+      - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
+            set -e
+
             cd ~/back/importtimporta-backend
+
             git pull origin main
+
             docker compose down
-            docker compose build
+
+            docker compose build --no-cache
+
             docker compose up -d
