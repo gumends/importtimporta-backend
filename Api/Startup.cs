@@ -91,14 +91,25 @@ public class Startup
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
     {
+        app.UseMiddleware<ExceptionMiddleware>();
+
         if (env.IsDevelopment())
         {
+
             app.UseSwagger();
-            app.UseSwaggerUI();
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Importt Importa API v1");
+                c.RoutePrefix = "swagger";
+            });
         }
 
+        app.UseHttpsRedirection();
+
         app.UseRouting();
+
         app.UseCors("AllowFrontend");
+
         app.UseAuthentication();
         app.UseAuthorization();
 
@@ -107,4 +118,5 @@ public class Startup
             endpoints.MapControllers();
         });
     }
+
 }

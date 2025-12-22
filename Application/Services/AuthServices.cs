@@ -128,6 +128,15 @@ namespace Application.Services
                 throw new NotFoundException("Usuário");
             }
 
+            if (user.Acesso != TipoAcesso.Padrao)
+            {
+                var tipoConta = user.Acesso == TipoAcesso.Apple ? "Apple" : "Google";
+
+                throw new BadRequestException(
+                    $"Este e-mail já está vinculado a uma conta {tipoConta}. Utilize esse método de login."
+                );
+            }
+
             bool senhaCorreta = BCrypt.Net.BCrypt.Verify(login.Senha, user.Senha);
 
             if (!senhaCorreta)

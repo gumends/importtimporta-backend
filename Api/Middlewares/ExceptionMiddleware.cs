@@ -44,19 +44,21 @@ public class ExceptionMiddleware
 
             default:
                 status = HttpStatusCode.InternalServerError;
-                message = "Erro interno no servidor";
+                message = "Ocorreu um erro interno. Tente novamente mais tarde.";
                 break;
         }
 
         var response = new
         {
             statusCode = (int)status,
-            error = message
+            message
         };
 
         context.Response.ContentType = "application/json";
         context.Response.StatusCode = (int)status;
 
-        return context.Response.WriteAsync(JsonSerializer.Serialize(response));
+        return context.Response.WriteAsync(
+            JsonSerializer.Serialize(response)
+        );
     }
 }
