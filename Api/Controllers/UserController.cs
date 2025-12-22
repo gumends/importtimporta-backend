@@ -80,7 +80,7 @@ namespace Api.Controllers
         }
 
         [HttpGet("menus")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,User")]
         public async Task<IActionResult> GetMenus([FromQuery] string email)
         {
             var menus = await _userService.GetMenus(email);
