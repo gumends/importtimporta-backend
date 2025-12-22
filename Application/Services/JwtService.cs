@@ -71,9 +71,9 @@ namespace Application.Services
 
             return new JwtUserData
             {
-                Id = jwt.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value ?? "",
-                Name = jwt.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value ?? "",
-                Email = jwt.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value ?? ""
+                Id = jwt.Claims.FirstOrDefault(c => c.Type == "nameid")?.Value ?? "",
+                Name = jwt.Claims.FirstOrDefault(c => c.Type == "unique_name")?.Value ?? "",
+                Email = jwt.Claims.FirstOrDefault(c => c.Type == "email")?.Value ?? ""
             };
         }
     }
