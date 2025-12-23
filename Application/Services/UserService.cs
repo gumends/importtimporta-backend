@@ -20,6 +20,13 @@ namespace Application.Services
 
         public async Task<User> CreateUser(string name, string email, string senha, Roles role, TipoAcesso tipoAcesso)
         {
+            var user = await _repo.FindUser(email);
+
+            if (user != null)
+            {
+                throw new BadRequestException("Usuario já cadastrado.");
+            }
+
             string senhaHasheada = BCrypt.Net.BCrypt.HashPassword(senha);
 
             if (senha == string.Empty)
@@ -27,7 +34,7 @@ namespace Application.Services
                 senhaHasheada = string.Empty;
             }
 
-            var user = new User
+            var newUser = new User
             {
                 Name = name,
                 Email = email,
@@ -36,7 +43,7 @@ namespace Application.Services
                 Acesso = tipoAcesso
             };
 
-            return await _repo.AddAsync(user);
+            return await _repo.AddAsync(newUser);
         }
 
         public async Task<string> CreateUserLogin(string name, string email, string senha, Roles role)

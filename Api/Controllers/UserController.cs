@@ -28,14 +28,14 @@ namespace Api.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CriarUsuario([FromBody] User user, [FromQuery] string state)
+        public async Task<IActionResult> CriarUsuario([FromBody] User user)
         {
             var token = await _userService.CreateUserLogin(user.Name, user.Email, user.Senha, user.Role);
 
             if (token == null)
                 return BadRequest();
 
-            return Ok(new { redirect = state, Token = token });
+            return Ok(new { Token = token });
         }
 
         [HttpPut]
