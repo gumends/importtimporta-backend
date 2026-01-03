@@ -22,9 +22,6 @@ public class AuthController : ControllerBase
         _config = config;
     }
 
-    // ===============================
-    // GOOGLE LOGIN
-    // ===============================
     [HttpGet("google-url")]
     public IActionResult GetGoogleUrl([FromQuery] string state)
     {
@@ -35,7 +32,6 @@ public class AuthController : ControllerBase
     [HttpGet("callback/google")]
     public async Task<IActionResult> GoogleCallback([FromQuery] string code)
     {
-        // 🔴 Validação CRÍTICA
         if (string.IsNullOrEmpty(code))
         {
             return Content("<h2>Erro: código do Google não recebido</h2>", "text/html");
@@ -47,27 +43,24 @@ public class AuthController : ControllerBase
         var safeToken = HttpUtility.JavaScriptStringEncode(result.Token);
 
         return Content($@"
-<html>
-  <body>
-    <script>
-      if (window.opener) {{
-        window.opener.postMessage(
-          {{ token: '{safeToken}' }},
-          '{frontendUrl}'
-        );
-        window.close();
-      }} else {{
-        document.body.innerHTML = 'Erro: opener não encontrado';
-      }}
-    </script>
-  </body>
-</html>
-", "text/html");
+        <html>
+          <body>
+            <script>
+              if (window.opener) {{
+                window.opener.postMessage(
+                  {{ token: '{safeToken}' }},
+                  '{frontendUrl}'
+                );
+                window.close();
+              }} else {{
+                document.body.innerHTML = 'Erro: opener não encontrado';
+              }}
+            </script>
+          </body>
+        </html>
+        ", "text/html");
     }
 
-    // ===============================
-    // ME
-    // ===============================
     [HttpPost("me")]
     public async Task<IActionResult> Me([FromBody] MeResponse meResponse)
     {
@@ -82,18 +75,12 @@ public class AuthController : ControllerBase
         return Ok(user);
     }
 
-    // ===============================
-    // LOGOUT
-    // ===============================
     [HttpPost("logout")]
     public IActionResult Logout()
     {
         return Ok(new { message = "Logout realizado" });
     }
 
-    // ===============================
-    // LOGIN NORMAL
-    // ===============================
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] Login login)
     {
@@ -101,8 +88,6 @@ public class AuthController : ControllerBase
 
         if (string.IsNullOrEmpty(token))
             return Unauthorized();
-
-        // 🔥 NÃO grava cookie, frontend cuida disso
         return Ok(new { token });
     }
 }
