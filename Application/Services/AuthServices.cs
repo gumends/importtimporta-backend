@@ -31,7 +31,7 @@ namespace Application.Services
                 $"?client_id={clientId}" +
                 $"&redirect_uri={redirectUri}" +
                 "&response_type=code" +
-                "&scope=openid%20email%20profile" +
+                "&scope=openid%20email%20profile" + 
                 "&access_type=offline" +
                 "&prompt=consent" +
                 $"&state={Uri.EscapeDataString(state)}";
