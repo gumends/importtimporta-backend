@@ -73,7 +73,7 @@ public class Startup
         );
 
         // AWS Settings
-        services.Configure<S3Settings>(_config.GetSection("AWS"));
+        services.Configure<S3Settings>(_config.GetSection("S3Settings"));
 
         // DI Services
         services.AddScoped<IS3Service, S3Service>();
