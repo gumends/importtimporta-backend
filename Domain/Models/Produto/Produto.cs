@@ -35,7 +35,7 @@ namespace Domain.Models.Produto
     public class Informacoes
     {
         public int Id { get; set; }
-        public string Marca { get; set; } = string.Empty;
+        public string? Marca { get; set; }
         public string? ArmazenamentoInterno { get; set; }
         public string? TipoTela { get; set; }
         public string? TamanhoTela { get; set; }
