@@ -119,12 +119,8 @@ namespace Infrastructure.Persistence
                 entity.ToTable("informacoes_produtos");
                 entity.HasKey(x => x.Id);
 
-                entity.Property(x => x.Marca).HasMaxLength(100).IsRequired();
-
                 entity.Property(x => x.Marca)
-                    .HasMaxLength(100)
-                    .IsRequired();
-
+                    .HasMaxLength(100);
                 entity.Property(x => x.ArmazenamentoInterno)
                     .HasMaxLength(100);
                 entity.Property(x => x.TipoTela)
