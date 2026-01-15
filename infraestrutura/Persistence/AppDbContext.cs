@@ -1,4 +1,5 @@
 ﻿using Domain.Entities;
+using Domain.Models.carrinho;
 using Domain.Models.Endereco;
 using Domain.Models.Imagem;
 using Domain.Models.Produto;
@@ -20,6 +21,7 @@ namespace Infrastructure.Persistence
         public DbSet<Imagem> Imagens => Set<Imagem>();
         public DbSet<Endereco> Enderecos => Set<Endereco>();
         public DbSet<UserMenu> Menus => Set<UserMenu>();
+        public DbSet<Carrinho> Carrinho  => Set<Carrinho>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -88,7 +90,8 @@ namespace Infrastructure.Persistence
                 entity.Property(x => x.ValorOriginal).IsRequired();
                 entity.Property(x => x.ValorParcelado).IsRequired();
                 entity.Property(x => x.Desconto).IsRequired();
-
+                entity.Property(x => x.Quantidade).IsRequired();
+                
                 entity.Property(x => x.Descricao)
                     .HasMaxLength(1000)
                     .IsRequired();
@@ -184,6 +187,21 @@ namespace Infrastructure.Persistence
                     .HasMaxLength(10);
             });
 
+            modelBuilder.Entity<Carrinho>(entity =>
+            {
+                entity.ToTable("carrinho");
+                
+                entity.HasKey(i => i.Id);
+
+                entity.Property(i => i.IdProduto)
+                    .IsRequired();
+                entity.Property(i => i.IdUsuario)
+                    .IsRequired();
+                entity.Property(i => i.Quantidade)
+                    .IsRequired();
+                entity.Property(i => i.CriadoEm)
+                    .IsRequired();
+            });
         }
     }
 }

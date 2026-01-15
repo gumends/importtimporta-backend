@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Infrastructure.Repositories;
 
 namespace Api;
 
@@ -42,7 +43,6 @@ public class Startup
             });
         });
 
-        // JWT
         var key = Encoding.UTF8.GetBytes(_config["Jwt:Key"]!);
 
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -63,28 +63,30 @@ public class Startup
 
         services.AddAuthorization();
 
-        // Banco
         var cs = _config.GetConnectionString("DefaultConnection");
+
         services.AddDbContext<AppDbContext>(options =>
             options.UseMySql(
                 cs,
-                new MySqlServerVersion(new Version(8, 0, 44))
+                ServerVersion.AutoDetect(cs)
             )
         );
 
-        // AWS Settings
+
         services.Configure<S3Settings>(_config.GetSection("S3Settings"));
 
-        // DI Services
+        // Services
         services.AddScoped<IS3Service, S3Service>();
         services.AddScoped<IProdutoService, ProdutoService>();
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IAuthServices, AuthServices>();
         services.AddScoped<IJwtService, JwtService>();
+        services.AddScoped<ICarrinhoService, CarrinhoService>();
 
         // Repositories
         services.AddScoped<IProdutoRepository, ProdutoRepository>();
         services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<ICarrinhoRepository, CarrinhoRepository>();
 
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen();
@@ -96,7 +98,6 @@ public class Startup
 
         if (env.IsDevelopment())
         {
-
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
@@ -119,5 +120,4 @@ public class Startup
             endpoints.MapControllers();
         });
     }
-
 }

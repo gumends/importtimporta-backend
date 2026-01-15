@@ -72,7 +72,7 @@ namespace Application.Services
             produtoExistente.NovoLancamento = novosDados.NovoLancamento;
             produtoExistente.NovaGeracao = novosDados.NovaGeracao;
             produtoExistente.Disponivel = novosDados.Disponivel;
-            produtoExistente.MesesGarantia = novosDados.MesesGarantia;
+            produtoExistente.Quantidade = novosDados.Quantidade;
 
             produtoExistente.Color = novosDados.Color;
             produtoExistente.ColorName = novosDados.ColorName;

@@ -17,7 +17,7 @@ namespace Domain.Models.Produto
         public bool? NovaGeracao { get; set; }
         public bool Disponivel { get; set; }
         public int MesesGarantia { get; set; }
-
+        public int Quantidade { get; set; }
         public Informacoes? InformacoesAdicionais { get; set; }
         public int? InformacoesAdicionaisId { get; set; }
 

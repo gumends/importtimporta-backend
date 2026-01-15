@@ -8,7 +8,7 @@ public class User
     public string Name { get; set; } = "";
     public string Email { get; set; } = "";
     public string Senha { get; set; } = "";
-    public DateOnly Nascimento { get; set; } = new DateOnly();
+    public DateOnly Nascimento { get; set; }
     public TipoAcesso Acesso { get; set; }
     public Roles Role { get; set; } = Roles.User;
     public bool Status { get; set; } = true;
