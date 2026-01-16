@@ -20,9 +20,26 @@ public class CarrinhoRepository : ICarrinhoRepository
 
     public async Task<Carrinho> inserirProdutoCarrinho(Carrinho carrinho)
     {
+        var findCarrinho = await _db.Carrinho.FirstOrDefaultAsync(c => c.IdUsuario == carrinho.IdUsuario && c.IdProduto == carrinho.IdProduto);
+        if (findCarrinho != null)
+        {
+            await SomarItem(carrinho.IdUsuario,  carrinho.IdProduto);
+            return findCarrinho;
+        }
+            
         await _db.Carrinho.AddAsync(carrinho);
         await _db.SaveChangesAsync();
         return carrinho;
+    }
+
+    public async Task SomarItem(int usuarioId, int produtoId)
+    {
+        var carrinho = await _db.Carrinho.FirstOrDefaultAsync(c => c.IdUsuario == usuarioId && c.IdProduto == produtoId);
+        if (carrinho == null)
+            return;
+        carrinho.Quantidade++;
+        _db.Carrinho.Update(carrinho);
+        await _db.SaveChangesAsync();
     }
 
     public async Task<CarrinhoDto> ListarCarrinho(int usuarioId)
