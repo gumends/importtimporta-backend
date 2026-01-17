@@ -29,12 +29,8 @@ public class Startup
         {
             options.AddPolicy("AllowFrontend", policy =>
             {
-                policy
-                    .WithOrigins(
-                        "http://100.28.1.126:3000",
-                        "http://localhost:3000",
+                policy.WithOrigins(
                         "https://importtimporta.com.br",
-                        "http://importtimporta.com.br",
                         "https://www.importtimporta.com.br"
                     )
                     .AllowAnyHeader()
