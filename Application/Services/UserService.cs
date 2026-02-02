@@ -2,6 +2,7 @@
 using Application.Interfaces.Services;
 using Domain.DTO;
 using Domain.Entities;
+using Domain.Models.Endereco;
 using Domain.Models.Produto;
 using Domain.Models.UserMenu;
 
@@ -91,6 +92,36 @@ namespace Application.Services
         public async Task<List<UserMenu>> GetMenus(string email)
         {
            return await _repo.GetUsersMenu(email);
+        }
+
+        public async Task<Endereco> CadastrarEndereco(Endereco endereco)
+        {
+            return await _repo.CadastrarEndereco(endereco);
+        }
+
+        public async Task<List<Endereco>> BuscaEnderecos(int usuarioId)
+        {
+            return await _repo.BuscaTodosEnderecos(usuarioId);
+        }
+
+        public async Task<Endereco> BuscaEndereco(int id)
+        {
+            return await _repo.BuscaEndereco(id);
+        }
+
+        public async Task<Endereco> AtualizarEndereco(Endereco endereco, int id)
+        {
+            return await _repo.AtualizarEndereco(endereco, id);
+        }
+
+        public async Task<Endereco> ExcluirEndereco(int id)
+        {
+            var endereco = await _repo.ExcluirEndereco(id);
+            if (endereco == null)
+            {
+                throw new BadRequestException("Endereço não encontrado.");
+            }
+            return endereco;
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using Application.Interfaces.Repositories;
 using Domain.DTO;
 using Domain.Entities;
+using Domain.Models.Endereco;
 using Domain.Models.Imagem;
 using Domain.Models.UserMenu;
 using Microsoft.EntityFrameworkCore;
@@ -46,7 +47,6 @@ namespace Infrastructure.Persistence.Repositories
             user.Name = userUp.Name;
             user.Email = userUp.Email;
             user.Role = userUp.Role;
-            user.Senha = BCrypt.Net.BCrypt.HashPassword(userUp.Senha);
             user.Nascimento = userUp.Nascimento;
 
             _db.Update(user);
@@ -128,6 +128,55 @@ namespace Infrastructure.Persistence.Repositories
             }
 
             return menus;
+        }
+
+        public async Task<Endereco> CadastrarEndereco(Endereco endereco)
+        {
+            await _db.Enderecos.AddAsync(endereco);
+            _db.SaveChanges();
+            return endereco;
+        }
+
+        public async Task<Endereco> BuscaEndereco(int id)
+        {
+            var endereco = await _db.Enderecos.FindAsync(id);
+            if (endereco == null)
+                return null;
+            return endereco;
+        }
+
+        public async Task<List<Endereco>> BuscaTodosEnderecos(int usuarioId)
+        {
+            var enderecos = await _db.Enderecos.Where(e => e.IdUsuario == usuarioId).ToListAsync();
+            return enderecos ;
+        }
+
+        public async Task<Endereco> AtualizarEndereco(Endereco newEndereco, int id)
+        {
+            var endereco = await _db.Enderecos.FindAsync(id);
+            
+            if (endereco == null)
+                return null;
+            
+            endereco.Cep = newEndereco.Cep;
+            endereco.Complemento = newEndereco.Complemento;
+            endereco.Numero = newEndereco.Numero;
+            
+            _db.Enderecos.Update(endereco);
+            await _db.SaveChangesAsync();
+            
+            return endereco;
+        }
+
+        public async Task<Endereco> ExcluirEndereco(int id)
+        {
+            var endereco = await _db.Enderecos.FindAsync(id);
+            if (endereco == null)
+                return null;
+
+            _db.Enderecos.Remove(endereco);
+            await _db.SaveChangesAsync();
+            return endereco;
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Application.Interfaces.Services;
+using Domain.Models.Endereco;
 using Domain.Models.Produto;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

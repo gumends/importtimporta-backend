@@ -1,5 +1,7 @@
-﻿using Application.Interfaces.Services;
+﻿using System.Security.Claims;
+using Application.Interfaces.Services;
 using Domain.Entities;
+using Domain.Models.Endereco;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -39,7 +41,7 @@ namespace Api.Controllers
         }
 
         [HttpPut]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,User")]
         public async Task<IActionResult> AtualizarUsuario([FromBody] User user, [FromQuery] int id)
         {
             var newUser = await _userService.AtualizarProduto(user, id);
@@ -48,7 +50,7 @@ namespace Api.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,User")]
         public async Task<IActionResult> BuscaUsuario([FromQuery] string email)
         {
             var user = await _userService.BuscaUsuario(email);
@@ -85,6 +87,42 @@ namespace Api.Controllers
         {
             var menus = await _userService.GetMenus(email);
             return Ok(menus);
+        }
+        
+        [HttpPost("endereco")]
+        public async Task<IActionResult> CadastrarEndereco([FromBody] Endereco endereco)
+        {
+            var enderecoRespose = await _userService.CadastrarEndereco(endereco);
+            return Ok(enderecoRespose);
+        }
+
+        [HttpGet("endereco")]
+        public async Task<IActionResult> BuscaEndereco([FromQuery] int id)
+        {
+            var endereco = await _userService.BuscaEndereco(id);
+            return Ok(endereco);
+        }
+
+        [HttpGet("enderecos")]
+        public async Task<IActionResult> BuscaEnderecos()
+        {
+            var usuarioId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+            var endereco = await _userService.BuscaEnderecos(usuarioId);
+            return Ok(endereco);
+        }
+
+        [HttpPut("endereco")]
+        public async Task<IActionResult> AtualizarEndereco([FromBody] Endereco endereco,[FromQuery] int id)
+        {
+            var novoEndereco = await _userService.AtualizarEndereco(endereco, id);
+            return Ok(novoEndereco);
+        }
+
+        [HttpDelete("endereco")]
+        public async Task<IActionResult> ExcluirEndereco([FromQuery] int id)
+        {
+            var endereco = await _userService.ExcluirEndereco(id);
+            return Ok(endereco);
         }
     }
 }

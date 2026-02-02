@@ -31,7 +31,8 @@ public class Startup
             {
                 policy.WithOrigins(
                         "https://importtimporta.com.br",
-                        "https://www.importtimporta.com.br"
+                        "https://www.importtimporta.com.br",
+                        "http://localhost:3000"
                     )
                     .AllowAnyHeader()
                     .AllowAnyMethod()

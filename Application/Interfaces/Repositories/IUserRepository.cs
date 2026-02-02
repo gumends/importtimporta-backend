@@ -1,5 +1,6 @@
 ﻿using Domain.DTO;
 using Domain.Entities;
+using Domain.Models.Endereco;
 using Domain.Models.Imagem;
 using Domain.Models.UserMenu;
 
@@ -15,5 +16,10 @@ namespace Application.Interfaces.Repositories
         Task ToggleAcessoUser(int id);
         Task ToggleStatusUser(int id);
         Task<List<UserMenu>> GetUsersMenu(string email);
+        Task<Endereco> CadastrarEndereco(Endereco endereco);
+        Task<Endereco> BuscaEndereco(int id);
+        Task<List<Endereco>> BuscaTodosEnderecos(int usuarioId);
+        Task<Endereco> AtualizarEndereco(Endereco newEndereco, int id);
+        Task<Endereco> ExcluirEndereco(int id);
     }
 }
