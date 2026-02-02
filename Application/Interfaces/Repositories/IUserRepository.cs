@@ -19,7 +19,7 @@ namespace Application.Interfaces.Repositories
         Task<Endereco> CadastrarEndereco(Endereco endereco);
         Task<Endereco> BuscaEndereco(int id);
         Task<List<Endereco>> BuscaTodosEnderecos(int usuarioId);
-        Task<Endereco> AtualizarEndereco(Endereco newEndereco, int id);
+        Task<Endereco> AtualizarEndereco(EnderecoRequest newEndereco, int id);
         Task<Endereco> ExcluirEndereco(int id);
     }
 }

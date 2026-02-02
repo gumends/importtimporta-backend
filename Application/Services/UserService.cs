@@ -94,8 +94,16 @@ namespace Application.Services
            return await _repo.GetUsersMenu(email);
         }
 
-        public async Task<Endereco> CadastrarEndereco(Endereco endereco)
+        public async Task<Endereco> CadastrarEndereco(EnderecoRequest enderecoRequest, int usuarioId)
         {
+            var endereco = new Endereco();
+            
+            endereco.Logradouro = enderecoRequest.Logradouro;
+            endereco.Numero = enderecoRequest.Numero;
+            endereco.Complemento = enderecoRequest.Complemento;
+            endereco.Cep = enderecoRequest.Cep;
+            endereco.IdUsuario = usuarioId;
+            
             return await _repo.CadastrarEndereco(endereco);
         }
 
@@ -109,9 +117,9 @@ namespace Application.Services
             return await _repo.BuscaEndereco(id);
         }
 
-        public async Task<Endereco> AtualizarEndereco(Endereco endereco, int id)
+        public async Task<Endereco> AtualizarEndereco(EnderecoRequest enderecoRequest, int id)
         {
-            return await _repo.AtualizarEndereco(endereco, id);
+            return await _repo.AtualizarEndereco(enderecoRequest, id);
         }
 
         public async Task<Endereco> ExcluirEndereco(int id)

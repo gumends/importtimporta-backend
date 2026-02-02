@@ -63,6 +63,9 @@ namespace Infrastructure.Persistence
 
                 entity.Property(x => x.Cep);
 
+                entity.Property(x => x.Logradouro)
+                    .HasMaxLength(200);
+
                 entity.Property(x => x.Numero);
 
                 entity.Property(x => x.Complemento)

@@ -151,7 +151,7 @@ namespace Infrastructure.Persistence.Repositories
             return enderecos ;
         }
 
-        public async Task<Endereco> AtualizarEndereco(Endereco newEndereco, int id)
+        public async Task<Endereco> AtualizarEndereco(EnderecoRequest newEndereco, int id)
         {
             var endereco = await _db.Enderecos.FindAsync(id);
             
@@ -161,6 +161,7 @@ namespace Infrastructure.Persistence.Repositories
             endereco.Cep = newEndereco.Cep;
             endereco.Complemento = newEndereco.Complemento;
             endereco.Numero = newEndereco.Numero;
+            endereco.Logradouro = newEndereco.Logradouro;
             
             _db.Enderecos.Update(endereco);
             await _db.SaveChangesAsync();

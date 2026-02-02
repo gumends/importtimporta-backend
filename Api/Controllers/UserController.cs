@@ -90,9 +90,11 @@ namespace Api.Controllers
         }
         
         [HttpPost("endereco")]
-        public async Task<IActionResult> CadastrarEndereco([FromBody] Endereco endereco)
+        public async Task<IActionResult> CadastrarEndereco([FromBody] EnderecoRequest enderecoRequest)
         {
-            var enderecoRespose = await _userService.CadastrarEndereco(endereco);
+            var usuarioId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+            var enderecoRespose = await _userService.CadastrarEndereco(enderecoRequest, usuarioId);
+            
             return Ok(enderecoRespose);
         }
 
@@ -112,9 +114,9 @@ namespace Api.Controllers
         }
 
         [HttpPut("endereco")]
-        public async Task<IActionResult> AtualizarEndereco([FromBody] Endereco endereco,[FromQuery] int id)
+        public async Task<IActionResult> AtualizarEndereco([FromBody] EnderecoRequest enderecoRequest,[FromQuery] int id)
         {
-            var novoEndereco = await _userService.AtualizarEndereco(endereco, id);
+            var novoEndereco = await _userService.AtualizarEndereco(enderecoRequest, id);
             return Ok(novoEndereco);
         }
 

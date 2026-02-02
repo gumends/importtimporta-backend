@@ -16,10 +16,10 @@ namespace Application.Interfaces.Services
         Task ToggleStatusUser(int id);
         Task ToggleAcessoUser(int id);
         Task<List<UserMenu>> GetMenus(string email);
-        Task<Endereco> CadastrarEndereco(Endereco endereco);
+        Task<Endereco> CadastrarEndereco(EnderecoRequest enderecoRequest, int usuarioId);
         Task<List<Endereco>> BuscaEnderecos(int usuarioId);
         Task<Endereco> BuscaEndereco(int id);
-        Task<Endereco> AtualizarEndereco(Endereco endereco, int id);
+        Task<Endereco> AtualizarEndereco(EnderecoRequest newEndereco, int id);
         Task<Endereco> ExcluirEndereco(int id);
     }
 }
