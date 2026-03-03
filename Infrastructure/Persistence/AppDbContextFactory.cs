@@ -9,14 +9,12 @@ namespace Infrastructure.Persistence
     {
         public AppDbContext CreateDbContext(string[] args)
         {
-            // carrega appsettings da API
             var config = new ConfigurationBuilder()
                 .SetBasePath(Path.Combine(Directory.GetCurrentDirectory(), "../Api"))
                 .AddJsonFile("appsettings.json", optional: false)
                 .AddJsonFile("appsettings.Development.json", optional: true)
                 .AddEnvironmentVariables()
                 .Build();
-
             var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
 
             var cs = config.GetConnectionString("DefaultConnection");

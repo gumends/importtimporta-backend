@@ -10,98 +10,52 @@ namespace Application.Services
     public class ProdutoService : IProdutoService
     {
         private readonly IProdutoRepository _produtoRepository;
-        private readonly IS3Service _awsS3Service;
+        private readonly IS3Repository _awsS3Service;
 
         public ProdutoService(
             IProdutoRepository produtoRepository,
-            IS3Service s3Service
+            IS3Repository s3Service
         )
         {
             _produtoRepository = produtoRepository;
             _awsS3Service = s3Service;
         }
 
-        public async Task<Produto> AdicionaProduto(Produto produto, List<IFormFile>? imagens)
+        public async Task<Produto> AdicionaProduto(ProdutoDto produto)
         {
-            ArgumentNullException.ThrowIfNull(produto);
-
-            produto.CalcularValores();
-
             var novoProduto = await _produtoRepository.AdicionaProduto(produto);
-
-            if (imagens != null && imagens.Count > 0)
-            {
-                novoProduto.Imagens = new List<Imagem>();
-
-                foreach (var imagem in imagens)
-                {
-                    var caminhoS3 = await _awsS3Service.UploadAsync(imagem);
-
-                    novoProduto.Imagens.Add(new Imagem
-                    {
-                        Caminho = caminhoS3,
-                        Descricao = $"Imagem do produto {novoProduto.NomeProduto}",
-                        ProdutoId = novoProduto.Id
-                    });
-                }
-
-                await _produtoRepository.SalvarImagens(novoProduto.Imagens);
-            }
 
             return novoProduto;
         }
 
         public async Task<Produto> AtualizaProduto(
-        int id,
-        Produto novosDados,
-        List<IFormFile>? novasImagens,
-        List<string>? imagensExistentes
-        )
+            Guid id,
+            Produto novosDados,
+            List<IFormFile>? novasImagens,
+            List<string>? imagensExistentes)
         {
-            var produtoExistente = await _produtoRepository.ObterProdutoPorId(id);
+            var produto = await _produtoRepository.ObterProdutoPorId(id);
 
-            if (produtoExistente == null)
+            if (produto == null)
                 throw new Exception("Produto não encontrado.");
 
-            produtoExistente.NomeProduto = novosDados.NomeProduto;
-            produtoExistente.ValorOriginal = novosDados.ValorOriginal;
-            produtoExistente.Desconto = novosDados.Desconto;
-            produtoExistente.ValorParcelado = novosDados.ValorParcelado;
-            produtoExistente.Descricao = novosDados.Descricao;
-            produtoExistente.TipoProduto = novosDados.TipoProduto;
-            produtoExistente.NovoLancamento = novosDados.NovoLancamento;
-            produtoExistente.NovaGeracao = novosDados.NovaGeracao;
-            produtoExistente.Disponivel = novosDados.Disponivel;
-            produtoExistente.Quantidade = novosDados.Quantidade;
+            produto.AtualizarDados(
+                novosDados.NomeProduto,
+                novosDados.Descricao,
+                novosDados.TipoProduto,
+                novosDados.Color,
+                novosDados.ColorName);
 
-            produtoExistente.Color = novosDados.Color;
-            produtoExistente.ColorName = novosDados.ColorName;
+            produto.AtualizarPreco(
+                novosDados.ValorOriginal,
+                novosDados.Desconto);
 
-            produtoExistente.CalcularValores();
+            produto.AtualizarEstoque(novosDados.Quantidade);
 
-            if (novosDados.InformacoesAdicionais != null)
-            {
-                if (produtoExistente.InformacoesAdicionais == null)
-                    produtoExistente.InformacoesAdicionais = new Informacoes();
-
-                produtoExistente.InformacoesAdicionais.Marca = novosDados.InformacoesAdicionais.Marca;
-                produtoExistente.InformacoesAdicionais.ArmazenamentoInterno = novosDados.InformacoesAdicionais.ArmazenamentoInterno;
-                produtoExistente.InformacoesAdicionais.TipoTela = novosDados.InformacoesAdicionais.TipoTela;
-                produtoExistente.InformacoesAdicionais.TamanhoTela = novosDados.InformacoesAdicionais.TamanhoTela;
-                produtoExistente.InformacoesAdicionais.ResolucaoTela = novosDados.InformacoesAdicionais.ResolucaoTela;
-                produtoExistente.InformacoesAdicionais.Tecnologia = novosDados.InformacoesAdicionais.Tecnologia;
-                produtoExistente.InformacoesAdicionais.Processador = novosDados.InformacoesAdicionais.Processador;
-                produtoExistente.InformacoesAdicionais.SistemaOperacional = novosDados.InformacoesAdicionais.SistemaOperacional;
-                produtoExistente.InformacoesAdicionais.CameraTraseira = novosDados.InformacoesAdicionais.CameraTraseira;
-                produtoExistente.InformacoesAdicionais.CameraFrontal = novosDados.InformacoesAdicionais.CameraFrontal;
-                produtoExistente.InformacoesAdicionais.Bateria = novosDados.InformacoesAdicionais.Bateria;
-                produtoExistente.InformacoesAdicionais.QuantidadeChips = novosDados.InformacoesAdicionais.QuantidadeChips;
-                produtoExistente.InformacoesAdicionais.Material = novosDados.InformacoesAdicionais.Material;
-            }
-
-            produtoExistente.Imagens ??= new List<Imagem>();
-            var imagensAtuais = produtoExistente.Imagens.ToList();
-
+            if (!novosDados.Disponivel)
+                produto.Desativar();
+            
+            var imagensAtuais = produto.Imagens.ToList();
             var caminhosMantidos = imagensExistentes ?? imagensAtuais.Select(i => i.Caminho).ToList();
 
             var imagensParaRemover = imagensAtuais
@@ -111,40 +65,40 @@ namespace Application.Services
             foreach (var img in imagensParaRemover)
             {
                 await _awsS3Service.DeleteAsync(img.Caminho);
+
+                produto.RemoverImagem(img.Id);
                 await _produtoRepository.RemoverImagem(img);
-                produtoExistente.Imagens.Remove(img);
             }
 
-            if (novasImagens != null && novasImagens.Count > 0)
+            if (novasImagens != null && novasImagens.Any())
             {
-                foreach (var imagem in novasImagens)
+                foreach (var arquivo in novasImagens)
                 {
-                    var caminhoS3 = await _awsS3Service.UploadAsync(imagem);
+                    var caminhoS3 = await _awsS3Service.UploadAsync(arquivo);
 
-                    var novaImagem = new Imagem
-                    {
-                        Caminho = caminhoS3,
-                        ProdutoId = produtoExistente.Id,
-                        Descricao = $"Imagem do produto {produtoExistente.NomeProduto}"
-                    };
+                    var imagem = new Imagem(
+                        caminhoS3,
+                        $"Imagem do produto {produto.NomeProduto}",
+                        produto.Id
+                    );
 
-                    await _produtoRepository.AdicionarImagem(novaImagem);
-                    produtoExistente.Imagens.Add(novaImagem);
+                    produto.AdicionarImagem(imagem);
+                    await _produtoRepository.AdicionarImagem(imagem);
                 }
             }
 
-            await _produtoRepository.AtualizaProduto(produtoExistente);
+            await _produtoRepository.AtualizaProduto(produto);
 
-            return produtoExistente;
+            return produto;
         }
 
-        public async Task<Produto?> ObterProdutoPorId(int id)
+        public async Task<Produto?> ObterProdutoPorId(Guid id)
         {
             return await _produtoRepository.ObterProdutoPorId(id);
         }
 
 
-        public async Task<bool> RemoveProduto(int id)
+        public async Task<bool> RemoveProduto(Guid id)
         {
             var produto = await _produtoRepository.ObterProdutoPorId(id);
 
@@ -162,9 +116,9 @@ namespace Application.Services
             return await _produtoRepository.RemoveProduto(id);
         }
 
-        public async Task<PaginacaoResultado<Produto>> ListaProdutos(int pagina, int tamanhoPagina)
+        public async Task<PaginacaoResultado<Produto>> ListaProdutos(int pagina, int tamanhoPagina, decimal? precoMinimo, decimal? precoMaximo, string? nomeProduto)
         {
-            return await _produtoRepository.ListaProdutosPaginado(pagina, tamanhoPagina);
+            return await _produtoRepository.ListaProdutosPaginado(pagina, tamanhoPagina, precoMinimo, precoMaximo, nomeProduto);
         }
 
         public async Task<PaginacaoResultado<Produto>> ListaProdutosPorTipo(int tipoProduto, int pagina, int tamanhoPagina)
@@ -185,23 +139,37 @@ namespace Application.Services
 
         public async Task<PaginacaoResultado<Produto>> ListaProdutosNovaGeracao(int pagina, int tamanhoPagina)
         {
-            return await _produtoRepository.ListaProdutosPaginado(pagina, tamanhoPagina);
+            return await _produtoRepository.ListaProdutosPaginado(pagina, tamanhoPagina, 0, 0, "");
         }
 
-        public async Task<Produto> DesativarAtivaProduto(int id)
+        public async Task<Produto> DesativarProduto(Guid id)
         {
             var produto = await _produtoRepository.ObterProdutoPorId(id);
 
             if (produto is null)
                 throw new DirectoryNotFoundException();
 
-            produto.Disponivel = produto.Disponivel == false ? true : false;
+            produto.Desativar();
 
             await _produtoRepository.AtualizaProduto(produto);
 
             return produto;
         }
 
+        public async Task<Produto> AtivarProduto(Guid id)
+        {
+            var produto = await _produtoRepository.ObterProdutoPorId(id);
+
+            if (produto is null)
+                throw new DirectoryNotFoundException();
+
+            produto.Ativar();
+
+            await _produtoRepository.AtualizaProduto(produto);
+
+            return produto;
+        }
+        
         public async Task<List<Produto>> BuscaProdutosVariados(int contidade)
         {
             var produtos = await _produtoRepository.ListaProdutos();
@@ -213,6 +181,23 @@ namespace Application.Services
 
             return produtosAleatorios;
         }
-
+        
+        public async Task<List<string>> SalvarImagens(List<IFormFile> imagens, Guid idProduto)
+        {
+            List<string> response = new List<string>();
+            foreach (var imagen in imagens)
+            {
+                string link = await _awsS3Service.UploadAsync(imagen);
+                
+                var imagem = new Imagem(
+                    link,
+                    "Imagem do produto {produto.NomeProduto}",
+                    idProduto);
+                
+                await _produtoRepository.AdicionarImagem(imagem);
+                response.Add(link);
+            }
+            return response;
+        }
     }
 }

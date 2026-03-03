@@ -2,7 +2,7 @@
 
 namespace Application.Interfaces.Services;
 
-public interface IS3Service
+public interface IS3Repository
 {
     Task<string> UploadAsync(IFormFile file);
     Task<List<string>> ListFilesAsync();

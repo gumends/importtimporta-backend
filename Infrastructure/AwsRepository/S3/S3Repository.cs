@@ -1,19 +1,19 @@
-﻿using Amazon;
+using Amazon;
 using Amazon.S3;
 using Amazon.S3.Model;
 using Application.Interfaces.Services;
+using Application.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
-using System.Runtime;
 
-namespace Application.Services;
+namespace Infrastructure.AwsRepository.S3;
 
-public class S3Service : IS3Service
+public class S3Repository : IS3Repository
 {
     private readonly IAmazonS3 _s3;
     private readonly S3Settings _settings;
 
-    public S3Service(IOptions<S3Settings> options)
+    public S3Repository(IOptions<S3Settings> options)
     {
         _settings = options.Value;
 
@@ -34,7 +34,7 @@ public class S3Service : IS3Service
 
         using var stream = file.OpenReadStream();
 
-        var request = new PutObjectRequest
+        var request = new PutObjectRequest()
         {
             BucketName = _settings.BucketName,
             Key = fileName,

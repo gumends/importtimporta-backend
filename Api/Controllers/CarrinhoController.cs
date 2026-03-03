@@ -18,9 +18,9 @@ public class CarrinhoController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> PostCarrinho([FromBody] CarrinhoRequest carrinho)
+    public async Task<IActionResult> PostCarrinho([FromBody] CarrinhoDto carrinho)
     {
-        var usuarioId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+        var usuarioId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
         var result = await _carrinhoService.PostCarrinho(carrinho, usuarioId);
         return Ok(result);
     }
@@ -29,14 +29,14 @@ public class CarrinhoController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> ListarCarrinho()
     {
-        var usuarioId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+        var usuarioId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
 
         var result = await _carrinhoService.Carrinho(usuarioId);
         return Ok(result);
     }
     
     [HttpDelete("{carrinhoId}")]
-    public async Task<IActionResult> ExcluirItemCarrinho([FromRoute] int carrinhoId)
+    public async Task<IActionResult> ExcluirItemCarrinho([FromRoute] Guid carrinhoId)
     {
         var result = await _carrinhoService.ExcluirItemCarrinho(carrinhoId);
         return Ok(result);

@@ -1,4 +1,5 @@
 ﻿using Application.Interfaces.Services;
+using Domain.DTO;
 using Domain.Models.Endereco;
 using Domain.Models.Produto;
 using Microsoft.AspNetCore.Authorization;
@@ -18,7 +19,7 @@ namespace Api.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetProdutoById([FromRoute] int id)
+        public async Task<IActionResult> GetProdutoById([FromRoute] Guid id)
         {
             var produto = await _produtoService.ObterProdutoPorId(id);
             if (produto == null)
@@ -29,13 +30,10 @@ namespace Api.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Admin")]
-        [Consumes("multipart/form-data")]
         public async Task<IActionResult> AdicionaProduto(
-            [FromForm] Produto produto,
-            [FromForm] List<IFormFile>? imagens)
+            [FromBody] ProdutoDto produto)
         {
-            var novoProduto = await _produtoService.AdicionaProduto(produto, imagens);
+            var novoProduto = await _produtoService.AdicionaProduto(produto);
             return CreatedAtAction(nameof(GetProdutoById), new { id = novoProduto.Id }, novoProduto);
         }
 
@@ -44,7 +42,7 @@ namespace Api.Controllers
         [Authorize(Roles = "Admin")]
         [Consumes("multipart/form-data")]
         public async Task<IActionResult> AtualizaProduto(
-            [FromRoute] int id,
+            [FromRoute] Guid id,
             [FromForm] Produto produto,
             [FromForm] List<IFormFile>? imagens,
             [FromForm(Name = "imagensExistentes")] List<string>? imagensExistentes
@@ -60,7 +58,7 @@ namespace Api.Controllers
 
         [HttpDelete("{id}")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> RemoveProduto([FromRoute] int id)
+        public async Task<IActionResult> RemoveProduto([FromRoute] Guid id)
         {
             var sucesso = await _produtoService.RemoveProduto(id);
             if (!sucesso)
@@ -71,9 +69,14 @@ namespace Api.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> ListaProdutos([FromQuery] int pagina = 1, [FromQuery] int tamanhoPagina = 10)
+        public async Task<IActionResult> ListaProdutos(
+            [FromQuery] int pagina = 1, 
+            [FromQuery] int tamanhoPagina = 10,
+            [FromQuery] decimal precoMinimo = 0,
+            [FromQuery] decimal precoMaximo = 0,
+            [FromQuery] string? nomeProduto = null)
         {
-            var produtos = await _produtoService.ListaProdutos(pagina, tamanhoPagina);
+            var produtos = await _produtoService.ListaProdutos(pagina, tamanhoPagina, precoMinimo, precoMaximo, nomeProduto);
             return Ok(produtos);
         }
 
@@ -91,11 +94,19 @@ namespace Api.Controllers
             return Ok(produtos);
         }
 
-        [HttpPut("ativa_desativa/{id}")]
+        [HttpPut("desativar/{id}")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> ToggleAtivacaoProduto([FromRoute] int id)
+        public async Task<IActionResult> DesativarProduto([FromRoute] Guid id)
         {
-            var produto = await _produtoService.DesativarAtivaProduto(id);
+            var produto = await _produtoService.DesativarProduto(id);
+            return Ok(produto);
+        }
+        
+        [HttpPut("ativar/{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> AtivacaoProduto([FromRoute] Guid id)
+        {
+            var produto = await _produtoService.AtivarProduto(id);
             return Ok(produto);
         }
 
@@ -104,6 +115,14 @@ namespace Api.Controllers
         {
             var produto = await _produtoService.BuscaProdutosVariados(quantidade);
             return Ok(produto);
+        }
+        
+        [HttpPost("SalvarImagens")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> SalvarImagens([FromForm] List<IFormFile> imagens, [FromQuery] Guid idProduto)
+        {
+            var resultado = await _produtoService.SalvarImagens(imagens, idProduto);
+            return Ok(resultado);
         }
     }
 }

@@ -7,7 +7,7 @@ namespace Application.Interfaces.Services
     {
         string AuthGoogle(string state);
         Task<Callback> GoogleCallback(string code);
-        Task<User?> ValidMe(string token);
+        Task<Usuario?> ValidMe(string token);
 
         Task<string> Login(Login login);
     }

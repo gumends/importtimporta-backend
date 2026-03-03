@@ -5,7 +5,7 @@ namespace Application.Interfaces.Services;
 
 public interface ICarrinhoService
 {
-    Task<Carrinho> PostCarrinho(CarrinhoRequest carrinhoRequest, int usuarioId);
-    Task<CarrinhoDto> Carrinho(int idUsuario);
-    Task<bool> ExcluirItemCarrinho(int carrinhoId);
+    Task<Carrinho> PostCarrinho(CarrinhoDto carrinhoRequest, Guid usuarioId);
+    Task<CarrinhoResponse> Carrinho(Guid idUsuario);
+    Task<bool> ExcluirItemCarrinho(Guid carrinhoId);
 }

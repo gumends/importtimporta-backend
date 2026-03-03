@@ -8,20 +8,23 @@ namespace Application.Interfaces.Services
 {
     public interface IProdutoService
     {
-        Task<Produto> AdicionaProduto(Produto produto, List<IFormFile>? imagens);
-        Task<Produto?> ObterProdutoPorId(int id);
-        Task<bool> RemoveProduto(int id);
+        Task<Produto> AdicionaProduto(ProdutoDto produto);
+        Task<Produto?> ObterProdutoPorId(Guid id);
+        Task<bool> RemoveProduto(Guid id);
         Task<Produto> AtualizaProduto(
-            int id,
+            Guid id,
             Produto novosDados,
             List<IFormFile>? novasImagens,
             List<string>? imagensExistentes);
-        Task<PaginacaoResultado<Produto>> ListaProdutos(int pagina, int tamanhoPagina);
+        Task<PaginacaoResultado<Produto>> ListaProdutos(int pagina, int tamanhoPagina, decimal? precoMinimo,
+            decimal? precoMaximo, string? nomeProduto);
         Task<PaginacaoResultado<Produto>> ListaProdutosPorTipo(int tipoProduto, int pagina, int tamanhoPagina);
         Task<Produto> AtualizarPreco(decimal valorOriginal, decimal desconto, int id);
         Task<PaginacaoResultado<Produto>> ListaProdutosPromocao(int pagina, int tamanhoPagina);
         Task<PaginacaoResultado<Produto>> ListaProdutosNovaGeracao(int pagina, int tamanhoPagina);
-        Task<Produto> DesativarAtivaProduto(int id);
+        Task<Produto> DesativarProduto(Guid id);
+        Task<Produto> AtivarProduto(Guid id);
         Task<List<Produto>> BuscaProdutosVariados(int quantidade);
+        Task<List<string>> SalvarImagens(List<IFormFile> imagens, Guid idProduto);
     }
 }

@@ -5,7 +5,7 @@ namespace Application.Interfaces.Repositories;
 
 public interface ICarrinhoRepository
 {
-    Task<Carrinho> inserirProdutoCarrinho(Carrinho carrinho);
-    Task<CarrinhoDto> ListarCarrinho(int UsuarioId);
-    Task<bool> ExcluirCarrinho(int carrinhoId);
+    Task<Carrinho> CriarProdutoCarrinho(Carrinho carrinho);
+    Task<CarrinhoResponse> ListarCarrinho(Guid UsuarioId);
+    Task<bool> ExcluirCarrinho(Guid carrinhoId);
 }

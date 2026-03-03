@@ -2,11 +2,11 @@
 {
     public class Endereco
     {
-        public int Id { get; set; }
+        public Guid Id { get; set; }
         public int Cep { get; set; }
         public string Logradouro { get; set; }
         public int Numero { get; set; }
         public string Complemento { get; set; } = string.Empty;
-        public int IdUsuario { get; set; }
+        public Guid IdUsuario { get; set; }
     }
 }

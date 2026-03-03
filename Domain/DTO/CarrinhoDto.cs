@@ -1,17 +1,7 @@
-using Domain.Models.carrinho;
-using Domain.Models.Produto;
-
-namespace Domain.DTO;
+namespace Domain.Models.carrinho;
 
 public class CarrinhoDto
 {
-    public decimal Subtotal  { get; set; }
-    public decimal Total { get; set; }
-    public decimal TaxaEntrega { get; set; }
-    public List<NewCarrinhoDto> Carrinhos { get; set; }
-}
-
-public class NewCarrinhoDto :  Carrinho
-{
-    public Produto Produto { get; set; }
+    public Guid IdProduto{ get; set; }
+    public int Quantidade { get; set; }
 }

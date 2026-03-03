@@ -34,4 +34,8 @@
 	    <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
 	  </Content>
 	</ItemGroup>
+	
+	<ItemGroup>
+	  <Folder Include="Uteis\" />
+	</ItemGroup>
 </Project>

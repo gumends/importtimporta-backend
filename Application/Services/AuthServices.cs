@@ -4,6 +4,7 @@ using Domain.Models.Auth;
 using Microsoft.Extensions.Configuration;
 using System.Net.Http.Json;
 using System.Text.Json;
+using Domain.Enuns;
 using static Domain.Models.Auth.GoogleExchangeService;
 
 namespace Application.Services
@@ -54,16 +55,17 @@ namespace Application.Services
             };
         }
 
-        public async Task ValidaUsuario(string email, string name, TipoAcesso tipoAcesso)
+        public async Task ValidaUsuario(string email, string nome, TipoAcesso tipoAcesso)
         {
-            var user = await _userServices.ValidUser(email);
-            if (user is null)
+            var validaUsuario = await _userServices.ValidUser(email);
+            if (validaUsuario is null)
             {
-                await _userServices.CreateUser(name, email, string.Empty, Roles.User, tipoAcesso);
+                var usuario = new Usuario(nome, email, "", new DateOnly(), tipoAcesso);
+                await _userServices.CriarUsuario(usuario.Name,  usuario.Email, usuario.Nascimento, usuario.Senha, usuario.Acesso);
             }
         }
-
-        public async Task<User?> ValidMe(string token)
+        
+        public async Task<Usuario?> ValidMe(string token)
         {
             if (string.IsNullOrEmpty(token))
                 return null;
@@ -106,11 +108,13 @@ namespace Application.Services
                 "https://www.googleapis.com/oauth2/v2/userinfo"
             );
 
+            var idString = userInfo.GetProperty("id").GetString();
+
             return new GooglePayload
             {
-                Id = userInfo.GetProperty("id").GetString()!,
-                Name = userInfo.GetProperty("name").GetString()!,
-                Email = userInfo.GetProperty("email").GetString()!
+                Id = Guid.TryParse(idString, out var parsedId) ? parsedId : Guid.Empty,
+                Name = userInfo.GetProperty("name").GetString() ?? string.Empty,
+                Email = userInfo.GetProperty("email").GetString() ?? string.Empty
             };
         }
 
@@ -144,7 +148,7 @@ namespace Application.Services
                 throw new UnauthorizedException("E-mail ou senha inválidos.");
             }
 
-            var jwt = _jwtService.GenerateJwt(user.Id.ToString(), user.Name, user.Email, user.Role);
+            var jwt = _jwtService.GenerateJwt(user.Id, user.Name, user.Email, user.Role);
 
             return jwt;
         }

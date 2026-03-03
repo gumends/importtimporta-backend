@@ -1,25 +1,24 @@
 ﻿using Domain.DTO;
 using Domain.Entities;
-using Domain.Models.Endereco;
+using Domain.Enuns;
+using Domain.Models.Topics;
 using Domain.Models.UserMenu;
 
 namespace Application.Interfaces.Services
 {
-    public interface IUserService
+    public interface 
+        IUserService
     {
-        Task<User> CreateUser(string name, string email, string senha, Roles role, TipoAcesso tipoAcesso);
-        Task<User?> ValidUser(string email);
-        Task<string> CreateUserLogin(string name, string email, string senha, Roles role);
-        Task<User> AtualizarProduto(User user, int id);
-        Task<User> BuscaUsuario(string email);
-        Task<PaginacaoResultado<User>> ListaUsuarios(int pagina, int tamanhoPagina);
-        Task ToggleStatusUser(int id);
-        Task ToggleAcessoUser(int id);
-        Task<List<UserMenu>> GetMenus(string email);
-        Task<Endereco> CadastrarEndereco(EnderecoRequest enderecoRequest, int usuarioId);
-        Task<List<Endereco>> BuscaEnderecos(int usuarioId);
-        Task<Endereco> BuscaEndereco(int id);
-        Task<Endereco> AtualizarEndereco(EnderecoRequest newEndereco, int id);
-        Task<Endereco> ExcluirEndereco(int id);
+        Task<Usuario> CriarUsuario(string name, string email, DateOnly nascimento, string senha, TipoAcesso tipoAcesso);
+        Task<Usuario?> ValidUser(string email);
+        Task<string> CriarUsuarioELogin(string nome, string email, DateOnly nascimento, string senha);
+        Task<Usuario> AtualizarUsuario(Usuario usuario, Guid id);
+        Task<Usuario> BuscaUsuario(string email);
+        Task<PaginacaoResultado<Usuario>> ListaUsuarios(int pagina, int tamanhoPagina);
+        Task ToggleStatusUser(Guid id);
+        Task TogglePermissaoUsuario(Guid id);
+        Task<List<UserMenu>> GetUserMenus(string email);
+        Task<EsqueciMinhaSenhaResponse> EsqueciMinhaSenha(EsqueciSenhaDto email);
+        Task<bool> AlterarSenhaUsuario(string token, string senha);
     }
 }
