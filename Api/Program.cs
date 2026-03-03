@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using infraestrutura.Repositories;
+using infraestruture.Repositories;
 using Infrastructure.AwsRepository.S3;
 
 var builder = WebApplication.CreateBuilder(args);
