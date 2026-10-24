@@ -35,7 +35,7 @@ services:
       Jwt__Issuer: api-importtimporta
       Jwt__Audience: api-importtimporta
       FrontendUrl: "${PUBLIC_URL:-http://52.91.185.36}"
-      AppBaseUrl: "${API_PUBLIC_URL:-http://52.91.185.36:5083}"
+      AppBaseUrl: "${API_PUBLIC_URL:-http://52.91.185.36}"
       BaseUrlSenha: "${PUBLIC_URL:-http://52.91.185.36}"
       Cors__Origins__0: "${PUBLIC_URL:-http://52.91.185.36}"
       Cors__Origins__1: "${PUBLIC_URL:-http://52.91.185.36}:3000"
