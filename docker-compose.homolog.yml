@@ -1,24 +1,24 @@
 services:
   db:
-    image: mcr.microsoft.com/mssql/server:2022-latest
+    # Azure SQL Edge roda em t3.small (~2GB); SQL Server 2022 exige mais RAM.
+    image: mcr.microsoft.com/azure-sql-edge:latest
     container_name: importt_sql_homolog
     restart: unless-stopped
     environment:
       ACCEPT_EULA: "Y"
       MSSQL_SA_PASSWORD: "${MSSQL_SA_PASSWORD:-Importt@Homolog2026!}"
-      MSSQL_MEMORY_LIMIT_MB: "1024"
     volumes:
       - sqldata:/var/opt/mssql
     healthcheck:
       test:
         [
           "CMD-SHELL",
-          "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -C -Q \"SELECT 1\" || exit 1",
+          "/opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -C -Q \"SELECT 1\" || exit 1",
         ]
       interval: 15s
       timeout: 10s
-      retries: 12
-      start_period: 45s
+      retries: 18
+      start_period: 90s
 
   api:
     build:

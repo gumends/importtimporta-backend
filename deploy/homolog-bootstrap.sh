@@ -18,6 +18,13 @@ if ! command -v docker >/dev/null 2>&1; then
   sudo usermod -aG docker "$USER" || true
 fi
 
+if ! swapon --show | grep -q /swapfile; then
+  sudo fallocate -l 2G /swapfile || true
+  sudo chmod 600 /swapfile
+  sudo mkswap /swapfile || true
+  sudo swapon /swapfile || true
+fi
+
 sudo mkdir -p /opt/importtimporta
 sudo chown -R "$USER:$USER" /opt/importtimporta
 
@@ -36,7 +43,7 @@ cd /opt/importtimporta/importtimporta
 git pull origin main
 
 cd /opt/importtimporta/importtimporta-backend
-docker compose -f docker-compose.homolog.yml up -d --build
+sudo docker compose -f docker-compose.homolog.yml up -d --build
 
 echo "Aguardando API..."
 for i in $(seq 1 60); do
@@ -51,7 +58,7 @@ curl -sf -X POST "$API_PUBLIC_URL/usuario" \
   -d "{\"name\":\"Admin Homolog\",\"email\":\"$ADMIN_EMAIL\",\"senha\":\"$ADMIN_PASSWORD\",\"nascimento\":\"1990-01-01\"}" \
   >/dev/null 2>&1 || true
 
-docker exec importt_sql_homolog /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "$MSSQL_SA_PASSWORD" -C -Q \
+docker exec importt_sql_homolog /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "$MSSQL_SA_PASSWORD" -C -Q \
   "UPDATE users SET Role = 1 WHERE Email = '$ADMIN_EMAIL';" >/dev/null 2>&1 || true
 
 cd /opt/importtimporta/importtimporta
