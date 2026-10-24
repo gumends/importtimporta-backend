@@ -1,0 +1,53 @@
+services:
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: importt_sql_homolog
+    restart: unless-stopped
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "${MSSQL_SA_PASSWORD:-Importt@Homolog2026!}"
+      MSSQL_MEMORY_LIMIT_MB: "1024"
+    volumes:
+      - sqldata:/var/opt/mssql
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -C -Q \"SELECT 1\" || exit 1",
+        ]
+      interval: 15s
+      timeout: 10s
+      retries: 12
+      start_period: 45s
+
+  api:
+    build:
+      context: .
+      dockerfile: Api/Dockerfile
+    container_name: importt_api_homolog
+    restart: unless-stopped
+    ports:
+      - "5083:80"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__DefaultConnection: "Server=db,1433;Database=importtimporta;User Id=sa;Password=${MSSQL_SA_PASSWORD:-Importt@Homolog2026!};TrustServerCertificate=True;Encrypt=False;MultipleActiveResultSets=True"
+      Jwt__Key: "${JWT_KEY:-importtimporta-homolog-jwt-key-32chars!!}"
+      Jwt__Issuer: api-importtimporta
+      Jwt__Audience: api-importtimporta
+      FrontendUrl: "${PUBLIC_URL:-http://52.91.185.36}"
+      AppBaseUrl: "${API_PUBLIC_URL:-http://52.91.185.36:5083}"
+      BaseUrlSenha: "${PUBLIC_URL:-http://52.91.185.36}"
+      Cors__Origins__0: "${PUBLIC_URL:-http://52.91.185.36}"
+      Cors__Origins__1: "${PUBLIC_URL:-http://52.91.185.36}:3000"
+      Frete__CepOrigem: "05711001"
+      Frete__NumeroOrigem: "1870"
+      S3Settings__Region: us-east-1
+      S3Settings__AccessKey: homolog
+      S3Settings__SecretKey: homolog
+      S3Settings__BucketName: importtimporta-homolog
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  sqldata:

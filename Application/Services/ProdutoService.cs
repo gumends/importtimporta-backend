@@ -1,6 +1,7 @@
 ﻿using Application.Interfaces.Repositories;
 using Application.Interfaces.Services;
 using Domain.DTO;
+using Domain.Entities;
 using Domain.Models.Imagem;
 using Domain.Models.Produto;
 using Microsoft.AspNetCore.Http;
@@ -37,7 +38,7 @@ namespace Application.Services
             var produto = await _produtoRepository.ObterProdutoPorId(id);
 
             if (produto == null)
-                throw new Exception("Produto não encontrado.");
+                throw new NotFoundException("Produto não encontrado.");
 
             produto.AtualizarDados(
                 novosDados.NomeProduto,
@@ -126,9 +127,9 @@ namespace Application.Services
             return await _produtoRepository.ListaProdutosPorTipo(tipoProduto, pagina, tamanhoPagina);
         }
 
-        public Task<Produto> AtualizarPreco(decimal valorOriginal, decimal desconto, int id)
+        public async Task<Produto> AtualizarPreco(decimal valorOriginal, decimal desconto, int id)
         {
-            throw new NotImplementedException();
+            throw new BadRequestException("Use a rota de atualização de produto para alterar preços.");
         }
 
         public async Task<PaginacaoResultado<Produto>> ListaProdutosPromocao(int pagina, int tamanhoPagina)

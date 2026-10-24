@@ -1,4 +1,5 @@
 ﻿using Domain.Entities;
+using Microsoft.Extensions.Hosting;
 using System.Net;
 using System.Text.Json;
 
@@ -19,12 +20,17 @@ public class ExceptionMiddleware
         }
         catch (Exception ex)
         {
+            Console.WriteLine(ex);
             await HandleExceptionAsync(context, ex);
         }
     }
 
     private static Task HandleExceptionAsync(HttpContext context, Exception exception)
     {
+        var isDevelopment = context.RequestServices
+            .GetRequiredService<IHostEnvironment>()
+            .IsDevelopment();
+
         HttpStatusCode status;
         string message = exception.Message;
 
@@ -44,7 +50,9 @@ public class ExceptionMiddleware
 
             default:
                 status = HttpStatusCode.InternalServerError;
-                message = "Ocorreu um erro interno. Tente novamente mais tarde.";
+                message = isDevelopment
+                    ? exception.Message
+                    : "Ocorreu um erro interno. Tente novamente mais tarde.";
                 break;
         }
 

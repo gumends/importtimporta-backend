@@ -37,27 +37,26 @@ namespace Application.Services
                 throw new BadRequestException("Usuario já cadastrado.");
             }
 
-            string senhaHasheada = BCrypt.Net.BCrypt.HashPassword(senha);
-
-            if (senha == string.Empty)
-            {
-                senhaHasheada = string.Empty;
-            }
-
-            var bodyHtmlEsqueciaMinhaSenha = HtmlBemVindo.Gerar(name);
+            var senhaHasheada = tipoAcesso == TipoAcesso.Padrao
+                ? BCrypt.Net.BCrypt.HashPassword(senha)
+                : string.Empty;
 
             var usuario = new Usuario(name, email, senhaHasheada, nascimento, tipoAcesso);
-            
-            var esqueciMinhaSenha = new EsqueciMinhaSenhaResponse()
-            {
-                To = usuario.Email,
-                Subject = "Solicitação para troca de senha.",
-                Body =  bodyHtmlEsqueciaMinhaSenha,
-            };
-            
-            var json = JsonSerializer.Serialize(esqueciMinhaSenha);
 
-            await _queueService.SendMessageAsync(json);
+            if (tipoAcesso == TipoAcesso.Padrao)
+            {
+                var bodyHtmlEsqueciaMinhaSenha = HtmlBemVindo.Gerar(name);
+
+                var esqueciMinhaSenha = new EsqueciMinhaSenhaResponse()
+                {
+                    To = usuario.Email,
+                    Subject = "Solicitação para troca de senha.",
+                    Body = bodyHtmlEsqueciaMinhaSenha,
+                };
+
+                var json = JsonSerializer.Serialize(esqueciMinhaSenha);
+                await _queueService.SendMessageAsync(json);
+            }
 
             return await _usuarioRepository.CriarUsuario(usuario);
         }
@@ -68,9 +67,7 @@ namespace Application.Services
             var jwt = _jwtService.GenerateJwt(res.Id, res.Name, res.Email, Roles.User);
 
             if (string.IsNullOrEmpty(jwt))
-            {
-                throw new Exception();
-            }
+                throw new BadRequestException("Não foi possível gerar o token de acesso.");
 
             return jwt;
         }
@@ -80,17 +77,17 @@ namespace Application.Services
             return await _usuarioRepository.BuscarUsuarioPorEmail(email);
         }
 
-        public async Task<Usuario> AtualizarUsuario(Usuario dados, Guid id)
+        public async Task<Usuario> AtualizarUsuario(UsuarioDTO dto, Guid id)
         {
             var usuario = await _usuarioRepository.BuscarUsuarioPorId(id);
 
             if (usuario == null)
-                throw new Exception("Usuário não encontrado");
+                throw new NotFoundException("Usuário não encontrado");
 
             usuario.AtualizarDados(
-                dados.Name,
-                dados.Email,
-                dados.Nascimento
+                dto.Name,
+                dto.Email,
+                dto.Nascimento
             );
 
             await _usuarioRepository.AtualizarUsuario(usuario);
@@ -184,7 +181,8 @@ namespace Application.Services
                     throw new NotFoundException("Usuario não encontrado");
 
                 usuario.AlterarSenha(senhaHasheada);
-                
+                await _usuarioRepository.AtualizarUsuario(usuario);
+
                 return true; 
             }
             

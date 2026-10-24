@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using Application.Interfaces.Repositories;
 using Application.Interfaces.Services;
 using Domain.Models.carrinho;
 using Microsoft.AspNetCore.Authorization;
@@ -11,12 +12,15 @@ namespace Api.Controllers;
 public class CarrinhoController : ControllerBase
 {
     private readonly ICarrinhoService _carrinhoService;
+    private readonly ICarrinhoRepository _carrinhoRepository;
 
-    public CarrinhoController(ICarrinhoService carrinhoService)
+    public CarrinhoController(ICarrinhoService carrinhoService, ICarrinhoRepository carrinhoRepository)
     {
         _carrinhoService = carrinhoService;
+        _carrinhoRepository = carrinhoRepository;
     }
 
+    [Authorize]
     [HttpPost]
     public async Task<IActionResult> PostCarrinho([FromBody] CarrinhoDto carrinho)
     {
@@ -35,9 +39,19 @@ public class CarrinhoController : ControllerBase
         return Ok(result);
     }
     
+    [Authorize]
     [HttpDelete("{carrinhoId}")]
     public async Task<IActionResult> ExcluirItemCarrinho([FromRoute] Guid carrinhoId)
     {
+        var usuarioId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+        var item = await _carrinhoRepository.ObterPorId(carrinhoId);
+
+        if (item == null)
+            return NotFound();
+
+        if (item.IdUsuario != usuarioId)
+            return Forbid();
+
         var result = await _carrinhoService.ExcluirItemCarrinho(carrinhoId);
         return Ok(result);
     }

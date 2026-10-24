@@ -30,17 +30,36 @@ public class AuthController : ControllerBase
     }
 
     [HttpGet("callback/google")]
-    public async Task<IActionResult> GoogleCallback([FromQuery] string code)
+    public async Task<IActionResult> GoogleCallback(
+        [FromQuery] string code,
+        [FromQuery] string? state)
     {
         if (string.IsNullOrEmpty(code))
         {
-            return Content("<h2>Erro: código do Google não recebido</h2>", "text/html");
+            var googleErr = Request.Query["error"].ToString();
+            var msg = string.IsNullOrEmpty(googleErr)
+                ? "código do Google não recebido"
+                : $"Google cancelou o login ({googleErr})";
+            return Content($"<h2>Erro: {msg}</h2>", "text/html");
         }
 
-        var result = await _authServices.GoogleCallback(code);
+        Callback result;
+        try
+        {
+            result = await _authServices.GoogleCallback(code);
+        }
+        catch (BadRequestException ex)
+        {
+            return GoogleCallbackErrorHtml(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return GoogleCallbackErrorHtml(ex.Message);
+        }
 
-        var frontendUrl = _config["FrontendUrl"];
+        var frontendUrl = GoogleOAuthFrontendOrigin.Resolve(state, _config);
         var safeToken = HttpUtility.JavaScriptStringEncode(result.Token);
+        var safeOrigin = HttpUtility.JavaScriptStringEncode(frontendUrl);
 
         return Content($@"
         <html>
@@ -49,7 +68,7 @@ public class AuthController : ControllerBase
               if (window.opener) {{
                 window.opener.postMessage(
                   {{ token: '{safeToken}' }},
-                  '{frontendUrl}'
+                  '{safeOrigin}'
                 );
                 window.close();
               }} else {{
@@ -89,5 +108,19 @@ public class AuthController : ControllerBase
         if (string.IsNullOrEmpty(token))
             return Unauthorized();
         return Ok(new { token });
+    }
+
+    private static IActionResult GoogleCallbackErrorHtml(string message)
+    {
+        var safeMsg = HttpUtility.HtmlEncode(message);
+        return new ContentResult
+        {
+            ContentType = "text/html",
+            Content =
+                $@"<html><body style=""font-family:sans-serif;padding:24px;max-width:520px"">
+                <h2>Login com Google</h2><p>{safeMsg}</p>
+                <p><small>Feche esta janela e tente novamente.</small></p>
+                </body></html>",
+        };
     }
 }

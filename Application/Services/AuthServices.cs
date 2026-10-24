@@ -24,18 +24,47 @@ namespace Application.Services
 
         public string AuthGoogle(string state)
         {
-            string clientId = _config["Authentication:Google:ClientId"]!;
-            string redirectUri = $"{_config["AppBaseUrl"]}/auth/callback/google";
+            string clientId = _config["Authentication:Google:ClientId"]?.Trim() ?? "";
+            string clientSecret = _config["Authentication:Google:ClientSecret"]?.Trim() ?? "";
+
+            if (string.IsNullOrEmpty(clientId) || string.IsNullOrEmpty(clientSecret))
+            {
+                throw new BadRequestException(
+                    "Login com Google não está configurado na API. " +
+                    "Defina Authentication:Google:ClientId e ClientSecret " +
+                    "(appsettings ou user-secrets) e cadastre o redirect URI no Google Cloud."
+                );
+            }
+
+            if (clientSecret.Contains("COLE_AQUI", StringComparison.OrdinalIgnoreCase)
+                || clientSecret.StartsWith("GOOGLE_", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new BadRequestException(
+                    "Substitua o placeholder do ClientSecret no appsettings.Development.json " +
+                    "pelo segredo real (GOCSPX-...) copiado do Google Cloud Console."
+                );
+            }
+
+            string appBase = _config["AppBaseUrl"]?.Trim().TrimEnd('/') ?? "";
+            if (string.IsNullOrEmpty(appBase))
+            {
+                throw new BadRequestException("AppBaseUrl não configurado na API.");
+            }
+
+            string redirectUri = $"{appBase}/auth/callback/google";
+            string safeState = string.IsNullOrWhiteSpace(state)
+                ? _config["FrontendUrl"] ?? "http://localhost:3000"
+                : state;
 
             string url =
                 "https://accounts.google.com/o/oauth2/v2/auth" +
-                $"?client_id={clientId}" +
-                $"&redirect_uri={redirectUri}" +
+                $"?client_id={Uri.EscapeDataString(clientId)}" +
+                $"&redirect_uri={Uri.EscapeDataString(redirectUri)}" +
                 "&response_type=code" +
-                "&scope=openid%20email%20profile" + 
+                "&scope=openid%20email%20profile" +
                 "&access_type=offline" +
-                "&prompt=consent" +
-                $"&state={Uri.EscapeDataString(state)}";
+                "&prompt=select_account" +
+                $"&state={Uri.EscapeDataString(safeState)}";
 
             return url;
         }
@@ -46,7 +75,11 @@ namespace Application.Services
 
             await ValidaUsuario(payload.Email, payload.Name, TipoAcesso.Google);
 
-            var jwt = _jwtService.GenerateJwt(payload.Id, payload.Name, payload.Email, Roles.User);
+            var user = await _userServices.ValidUser(payload.Email);
+            if (user is null)
+                throw new NotFoundException("Usuário");
+
+            var jwt = _jwtService.GenerateJwt(user.Id, user.Name, user.Email, user.Role);
 
             return new Callback
             {
@@ -80,9 +113,10 @@ namespace Application.Services
         {
             using var http = new HttpClient();
 
-            string clientId = config["Authentication:Google:ClientId"]!;
-            string clientSecret = config["Authentication:Google:ClientSecret"]!;
-            string redirectUri = $"{config["AppBaseUrl"]}/auth/callback/google";
+            string clientId = config["Authentication:Google:ClientId"]?.Trim() ?? "";
+            string clientSecret = config["Authentication:Google:ClientSecret"]?.Trim() ?? "";
+            string appBase = config["AppBaseUrl"]?.Trim().TrimEnd('/') ?? "";
+            string redirectUri = $"{appBase}/auth/callback/google";
 
             var tokenRequest = new FormUrlEncodedContent(new Dictionary<string, string>
             {
@@ -94,10 +128,42 @@ namespace Application.Services
             });
 
             var tokenResponse = await http.PostAsync("https://oauth2.googleapis.com/token", tokenRequest);
-            var tokenJson = await tokenResponse.Content.ReadFromJsonAsync<JsonElement>();
+            var rawBody = await tokenResponse.Content.ReadAsStringAsync();
+            using var tokenJson = JsonDocument.Parse(
+                string.IsNullOrWhiteSpace(rawBody) ? "{}" : rawBody);
+            var root = tokenJson.RootElement;
 
-            if (!tokenJson.TryGetProperty("access_token", out var accessTokenProp))
-                throw new Exception("Google não retornou access_token.");
+            if (!root.TryGetProperty("access_token", out var accessTokenProp))
+            {
+                var googleError = root.TryGetProperty("error", out var err)
+                    ? err.GetString()
+                    : null;
+                var googleDesc = root.TryGetProperty("error_description", out var desc)
+                    ? desc.GetString()
+                    : null;
+
+                var detail = !string.IsNullOrWhiteSpace(googleDesc)
+                    ? googleDesc
+                    : googleError ?? "resposta inesperada do Google";
+
+                if (googleError == "invalid_client")
+                {
+                    throw new BadRequestException(
+                        "Client Secret do Google inválido. No Google Cloud, abra o cliente OAuth, " +
+                        "copie de novo o segredo (ou gere um novo) e atualize Authentication:Google:ClientSecret na API."
+                    );
+                }
+
+                if (googleError == "redirect_uri_mismatch")
+                {
+                    throw new BadRequestException(
+                        $"Redirect URI não confere. A API usa: {redirectUri}. " +
+                        "Cadastre exatamente esse URI em URIs de redirecionamento no Google Cloud."
+                    );
+                }
+
+                throw new BadRequestException($"Google OAuth falhou: {detail}");
+            }
 
             string accessToken = accessTokenProp.GetString()!;
 

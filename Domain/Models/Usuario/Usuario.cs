@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using Domain.Enuns;
 
@@ -9,6 +10,7 @@ public class Usuario
     public Guid Id { get; private set; }
     public string Name { get; private set; }
     public string Email { get; private set; }
+    [JsonIgnore]
     public string Senha { get; private set; }
     public DateOnly Nascimento { get; private set; }
     public TipoAcesso Acesso { get; private set; }
@@ -26,7 +28,8 @@ public class Usuario
     {
         ValidarNome(name);
         ValidarEmail(email);
-        ValidarSenha(senha);
+        if (acesso == TipoAcesso.Padrao)
+            ValidarSenha(senha);
 
         Name = name;
         Email = email;

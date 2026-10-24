@@ -1,18 +1,15 @@
 services:
   db:
-    image: mysql:8.0
-    container_name: mysql_importt
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: sqlserver_importt
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: root123
-      MYSQL_DATABASE: importtimporta
-      MYSQL_USER: importt
-      MYSQL_PASSWORD: 123456
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "Importt@Local123"
     ports:
-      - "3306:3306"
-    command: --default-authentication-plugin=mysql_native_password
+      - "1433:1433"
     volumes:
-      - mysqldata:/var/lib/mysql
+      - sqldata:/var/opt/mssql
 
   redis:
     image: redis:7
@@ -38,6 +35,6 @@ services:
       - rabbitmqdata:/var/lib/rabbitmq
 
 volumes:
-  mysqldata:
+  sqldata:
   redisdata:
   rabbitmqdata:

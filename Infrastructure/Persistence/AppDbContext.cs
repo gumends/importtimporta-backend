@@ -89,10 +89,17 @@ namespace Infrastructure.Persistence
                     .HasMaxLength(200)
                     .IsRequired();
 
-                entity.Property(x => x.Valor);
-                entity.Property(x => x.ValorOriginal).IsRequired();
-                entity.Property(x => x.ValorParcelado).IsRequired();
-                entity.Property(x => x.Desconto).IsRequired();
+                entity.Property(x => x.Valor)
+                    .HasPrecision(18, 2);
+                entity.Property(x => x.ValorOriginal)
+                    .HasPrecision(18, 2)
+                    .IsRequired();
+                entity.Property(x => x.ValorParcelado)
+                    .HasPrecision(18, 2)
+                    .IsRequired();
+                entity.Property(x => x.Desconto)
+                    .HasPrecision(18, 2)
+                    .IsRequired();
                 entity.Property(x => x.Quantidade).IsRequired();
                 
                 entity.Property(x => x.Descricao)
@@ -186,7 +193,7 @@ namespace Infrastructure.Persistence
                     .HasMaxLength(50);
 
                 entity.Property(i => i.Role)
-                    .HasMaxLength(10);
+                    .IsRequired();
             });
 
             modelBuilder.Entity<Carrinho>(entity =>

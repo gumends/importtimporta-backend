@@ -12,7 +12,7 @@ namespace Application.Interfaces.Services
         Task<Usuario> CriarUsuario(string name, string email, DateOnly nascimento, string senha, TipoAcesso tipoAcesso);
         Task<Usuario?> ValidUser(string email);
         Task<string> CriarUsuarioELogin(string nome, string email, DateOnly nascimento, string senha);
-        Task<Usuario> AtualizarUsuario(Usuario usuario, Guid id);
+        Task<Usuario> AtualizarUsuario(UsuarioDTO dto, Guid id);
         Task<Usuario> BuscaUsuario(string email);
         Task<PaginacaoResultado<Usuario>> ListaUsuarios(int pagina, int tamanhoPagina);
         Task ToggleStatusUser(Guid id);

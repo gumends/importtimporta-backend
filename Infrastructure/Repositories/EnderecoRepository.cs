@@ -16,17 +16,17 @@ public class EnderecoRepository : IEnderecoRepository
     
     public async Task<Endereco> CadastrarEndereco(Endereco endereco)
     {
+        if (endereco.Id == Guid.Empty)
+            endereco.Id = Guid.NewGuid();
+
         await _db.Enderecos.AddAsync(endereco);
-        _db.SaveChanges();
+        await _db.SaveChangesAsync();
         return endereco;
     }
 
-    public async Task<Endereco> BuscaEndereco(Guid id)
+    public async Task<Endereco?> BuscaEndereco(Guid id)
     {
-        var endereco = await _db.Enderecos.FindAsync(id);
-        if (endereco == null)
-            return null;
-        return endereco;
+        return await _db.Enderecos.FindAsync(id);
     }
 
     public async Task<List<Endereco>> BuscaTodosEnderecos(Guid usuarioId)
@@ -35,7 +35,7 @@ public class EnderecoRepository : IEnderecoRepository
         return enderecos ;
     }
 
-    public async Task<Endereco> AtualizarEndereco(EnderecoRequest newEndereco, Guid id)
+    public async Task<Endereco?> AtualizarEndereco(EnderecoRequest newEndereco, Guid id)
     {
         var endereco = await _db.Enderecos.FindAsync(id);
             
@@ -53,7 +53,7 @@ public class EnderecoRepository : IEnderecoRepository
         return endereco;
     }
 
-    public async Task<Endereco> ExcluirEndereco(Guid id)
+    public async Task<Endereco?> ExcluirEndereco(Guid id)
     {
         var endereco = await _db.Enderecos.FindAsync(id);
         if (endereco == null)

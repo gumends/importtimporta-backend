@@ -44,7 +44,11 @@ public class EnderecoService : IEnderecoService
 
     public async Task<Endereco> AtualizarEndereco(EnderecoRequest enderecoRequest, Guid id)
     {
-        return await _enderecoRepository.AtualizarEndereco(enderecoRequest, id);
+        var endereco = await _enderecoRepository.AtualizarEndereco(enderecoRequest, id);
+        if (endereco == null)
+            throw new BadRequestException("Endereço não encontrado.");
+
+        return endereco;
     }
 
     public async Task<Endereco> ExcluirEndereco(Guid id)

@@ -13,6 +13,7 @@ public class CarrinhoResponse
 
 public class CarrinhoItemResponse
 {
+    public Guid Id { get; set; }
     public Guid IdProduto { get; set; }
     public string NomeProduto { get; set; }
     public decimal ValorUnitario { get; set; }

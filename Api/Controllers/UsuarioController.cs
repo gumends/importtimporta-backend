@@ -33,17 +33,15 @@ namespace Api.Controllers
         [HttpPost]
         public async Task<IActionResult> CriarUsuario([FromBody] UsuarioDTO usuario)
         {
-            var token = await _userService.CriarUsuario(usuario.Name, usuario.Email, usuario.Nascimento, usuario.Senha, usuario.Acesso);
-            return Ok(new { Token = token });
+            var token = await _userService.CriarUsuarioELogin(usuario.Name, usuario.Email, usuario.Nascimento, usuario.Senha);
+            return Ok(new { token });
         }
 
         [HttpPut]
         [Authorize(Roles = "Admin,User")]
         public async Task<IActionResult> AtualizarUsuario([FromBody] UsuarioDTO dto, [FromQuery] Guid id)
         {
-            Usuario usuario = new Usuario(dto.Name, dto.Email, dto.Senha, dto.Nascimento, dto.Acesso);
-            var usuarioAtualizado = await _userService.AtualizarUsuario(usuario, id);
-
+            var usuarioAtualizado = await _userService.AtualizarUsuario(dto, id);
             return Ok(usuarioAtualizado);
         }
 
@@ -91,7 +89,6 @@ namespace Api.Controllers
         public async Task<IActionResult> EsqueciMinhaSenha([FromBody] EsqueciSenhaDto email)
         {
              var res = await _userService.EsqueciMinhaSenha(email);
-             Console.WriteLine(res);
              return Ok(res);
         }
         
@@ -105,10 +102,5 @@ namespace Api.Controllers
             return Ok(res);
         }
 
-        [HttpPost("imagens")]
-        public async Task<IActionResult> InserirImagens()
-        {
-            throw new NotImplementedException();
-        }
     }
 }

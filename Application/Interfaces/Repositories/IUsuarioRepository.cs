@@ -9,8 +9,8 @@ namespace Application.Interfaces.Repositories
     public interface IUsuarioRepository
     {
         Task<Usuario> CriarUsuario(Usuario usuario);
-        Task<Usuario> BuscarUsuarioPorEmail(string email);
-        Task<Usuario> BuscarUsuarioPorId(Guid id);
+        Task<Usuario?> BuscarUsuarioPorEmail(string email);
+        Task<Usuario?> BuscarUsuarioPorId(Guid id);
         Task SalvarImagens(IEnumerable<Imagem> imagens);
         Task<Usuario> AtualizarUsuario(Usuario usuario);
         Task<PaginacaoResultado<Usuario>> BuscarUsuariosPaginado(int pagina, int tamanhoPagina);

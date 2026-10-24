@@ -6,11 +6,11 @@ public interface IEnderecoRepository
 {
     Task<Endereco> CadastrarEndereco(Endereco endereco);
 
-    Task<Endereco> BuscaEndereco(Guid id);
+    Task<Endereco?> BuscaEndereco(Guid id);
 
     Task<List<Endereco>> BuscaTodosEnderecos(Guid usuarioId);
 
-    Task<Endereco> AtualizarEndereco(EnderecoRequest newEndereco, Guid id);
+    Task<Endereco?> AtualizarEndereco(EnderecoRequest newEndereco, Guid id);
 
-    Task<Endereco> ExcluirEndereco(Guid id);
+    Task<Endereco?> ExcluirEndereco(Guid id);
 }

@@ -1,11 +1,13 @@
 using System.Security.Claims;
 using Application.Interfaces.Services;
 using Domain.Models.Endereco;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers;
 
 [ApiController]
+[Authorize]
 [Route("endereco")]
 public class EnderecoController : ControllerBase
 {
@@ -28,10 +30,11 @@ public class EnderecoController : ControllerBase
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(Guid id)
     {
+        var usuarioId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
         var endereco = await _enderecoService.BuscaEndereco(id);
 
-        if (endereco == null)
-            return NotFound("Endereco não encontrado");
+        if (endereco.IdUsuario != usuarioId)
+            return Forbid();
 
         return Ok(endereco);
     }
@@ -47,6 +50,12 @@ public class EnderecoController : ControllerBase
     [HttpPut]
     public async Task<IActionResult> AtualizarEndereco([FromBody] EnderecoRequest enderecoRequest, [FromQuery] Guid id)
     {
+        var usuarioId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+        var enderecoAtual = await _enderecoService.BuscaEndereco(id);
+
+        if (enderecoAtual.IdUsuario != usuarioId)
+            return Forbid();
+
         var novoEndereco = await _enderecoService.AtualizarEndereco(enderecoRequest, id);
         return Ok(novoEndereco);
     }
@@ -54,6 +63,12 @@ public class EnderecoController : ControllerBase
     [HttpDelete]
     public async Task<IActionResult> ExcluirEndereco([FromQuery] Guid id)
     {
+        var usuarioId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+        var enderecoAtual = await _enderecoService.BuscaEndereco(id);
+
+        if (enderecoAtual.IdUsuario != usuarioId)
+            return Forbid();
+
         var endereco = await _enderecoService.ExcluirEndereco(id);
         return Ok(endereco);
     }
